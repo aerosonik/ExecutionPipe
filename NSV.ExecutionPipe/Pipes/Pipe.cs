@@ -87,25 +87,25 @@ namespace NSV.ExecutionPipe.Pipes
         }
 
 
-        public IBasePipe<M, R> UseStopWatch()
+        public IPipe<M, R> UseStopWatch()
         {
             _stopWatch = new Stopwatch();
             return this;
         }
 
-        public IBasePipe<M, R> UseModel(M model = default)
+        public IPipe<M, R> UseModel(M model = default)
         {
             _model = model;
             return this;
         }
 
-        public IBasePipe<M, R> UseLocalCacheThreadSafe()
+        public IPipe<M, R> UseLocalCacheThreadSafe()
         {
             _localCache = new ConcurrentDictionary<object, object>();
             return this;
         }
 
-        public IBasePipe<M, R> UseLocalCache()
+        public IPipe<M, R> UseLocalCache()
         {
             _localCache = new Dictionary<object, object>();
             return this;
@@ -151,6 +151,7 @@ namespace NSV.ExecutionPipe.Pipes
 
         public PipeResult<R> Run()
         {
+
             if (_type == PipeExecutionType.None)
                 throw new Exception(Const.PipeNotConfigured);
 

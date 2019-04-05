@@ -8,6 +8,8 @@ namespace NSV.ExecutionPipe.xTests
     {
         public int Id { get; set; }
         public string Name { get; set; }
+
+        public int Milliseconds { get; set; }
     }
 
     public class TestResult

@@ -18,6 +18,11 @@ namespace NSV.ExecutionPipe.Pipes
         IParallelPipe<M, R> AsParallel();
         ISequentialPipe<M, R> AsSequential();
 
+        IPipe<M, R> UseStopWatch();
+        IPipe<M, R> UseModel(M model = default);
+        IPipe<M, R> UseLocalCacheThreadSafe();
+        IPipe<M, R> UseLocalCache();
+
     }
 
     public interface ISequentialPipe<M,R>: IBasePipe<M, R>
@@ -38,11 +43,6 @@ namespace NSV.ExecutionPipe.Pipes
         IBasePipe<M, R> SetModel(M model);
         IBasePipe<M, R> SetSkipIf(Func<M, bool> condition);
         IBasePipe<M, R> SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition);
-
-        IBasePipe<M, R> UseStopWatch();
-        IBasePipe<M, R> UseModel(M model = default);
-        IBasePipe<M, R> UseLocalCacheThreadSafe();
-        IBasePipe<M, R> UseLocalCache();
 
         IPipe<M, R> Finish();
     }

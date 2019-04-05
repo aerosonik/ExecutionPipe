@@ -29,10 +29,10 @@ namespace NSV.ExecutionPipe.xTests
                         .SelectMany(x => x.Errors.Value)
                         .ToArray(),
 
-                    Exception = results
+                    Exceptions = results
                         .Where(x => x.Success != ExecutionResult.Initial)
-                        .Where(x => x.Exception.HasValue)
-                        .SelectMany(x => x.Exception.Value)
+                        .Where(x => x.Exceptions.HasValue)
+                        .SelectMany(x => x.Exceptions.Value)
                         .ToArray(),
 
                     Success = success,

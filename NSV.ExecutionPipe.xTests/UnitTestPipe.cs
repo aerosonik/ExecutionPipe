@@ -1,3 +1,4 @@
+using NSV.ExecutionPipe.Models;
 using NSV.ExecutionPipe.Pipes;
 using System;
 using Xunit;
@@ -6,12 +7,74 @@ namespace NSV.ExecutionPipe.xTests
 {
     public class UnitTestPipe
     {
-        private Pipe<TestModel, TestResult> TestPipe;
-
         [Fact]
         public void Pipe_AsParallel()
         {
-            //TestPipe = new Pipe<>()
+            Pipe<TestModel, TestResult> testPipe = new TestPipe();
+            var parallelPipe = testPipe.AsParallel();
+            Assert.IsAssignableFrom<IParallelPipe<TestModel, TestResult>>(parallelPipe);
+        }
+
+        [Fact]
+        public void Pipe_AsSequential()
+        {
+            Pipe<TestModel, TestResult> testPipe = new TestPipe();
+            var parallelPipe = testPipe.AsSequential();
+            Assert.IsAssignableFrom<ISequentialPipe<TestModel, TestResult>>(parallelPipe);
+        }
+
+        [Fact]
+        public void Pipe_Execution_Sequential()
+        {
+            var executor1 = new TestExecutor1();
+            var executor2 = new TestExecutor2();
+            var executor3 = new TestExecutor3();
+            var model = new TestModel
+            {
+                Id = 1,
+                Name = "model 1",
+                Milliseconds = 2000
+            };
+            Pipe<TestModel, TestResult> testPipe = new TestPipe();
+            testPipe
+                .UseModel(model)
+                .UseStopWatch()
+                .AsSequential()
+                .AddExecutor(executor1)
+                .AddExecutor(executor2)
+                .AddExecutor(executor3)
+                .Finish();
+
+            var result = testPipe.Run();
+            Assert.Equal(ExecutionResult.Successful, result.Success);
+            Assert.True(testPipe.Elapsed.TotalMilliseconds > 6000);
+        }
+
+        [Fact]
+        public void Pipe_Execution_Parallel()
+        {
+            var executor1 = new TestExecutor1();
+            var executor2 = new TestExecutor2();
+            var executor3 = new TestExecutor3();
+            var model = new TestModel
+            {
+                Id = 1,
+                Name = "model 1",
+                Milliseconds = 2000
+            };
+            Pipe<TestModel, TestResult> testPipe = new TestPipe();
+            testPipe
+                .UseModel(model)
+                .UseStopWatch()
+                .AsParallel()
+                .AddExecutor(executor1)
+                .AddExecutor(executor2)
+                .AddExecutor(executor3)
+                .Finish();
+
+            var result = testPipe.Run();
+            Assert.Equal(ExecutionResult.Successful, result.Success);
+            Assert.True(testPipe.Elapsed.TotalMilliseconds < 6000);
         }
     }
 }
