@@ -11,6 +11,16 @@
     <LangVersion>7.3</LangVersion>
     <Version>1.0.0</Version>
     <PackageVersion></PackageVersion>
+    <ApplicationIcon />
+    <Win32Resource />
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile></DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Resources\" />
+  </ItemGroup>
 
 </Project>
