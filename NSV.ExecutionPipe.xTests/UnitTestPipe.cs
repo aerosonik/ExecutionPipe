@@ -76,5 +76,89 @@ namespace NSV.ExecutionPipe.xTests
             Assert.Equal(ExecutionResult.Successful, result.Success);
             Assert.True(testPipe.Elapsed.TotalMilliseconds < 6000);
         }
+
+        [Fact]
+        public void Pipe_Execution_Sequential_Break()
+        {
+            var executor1 = new TestExecutor1();
+            var executor2 = new TestExecutor2();
+            var executor3 = new TestExecutor3();
+            var model = new TestModel
+            {
+                Id = 1,
+                Name = "model 1",
+                Milliseconds = 2000
+            };
+            Pipe<TestModel, TestResult> testPipe = new TestPipe();
+            testPipe
+                .UseModel(model)
+                .UseStopWatch()
+                .AsSequential()
+                .AddExecutor(executor1)
+                .AddExecutor(executor2)
+                    .SetAllowBreak()
+                .AddExecutor(executor3)
+                .Finish();
+
+            var result = testPipe.Run();
+            Assert.Equal(ExecutionResult.Successful, result.Success);
+            Assert.True(testPipe.Elapsed.TotalMilliseconds < 6000);
+        }
+
+        [Fact]
+        public void Pipe_Execution_Sequential_Skip()
+        {
+            var executor1 = new TestExecutor1();
+            var executor2 = new TestExecutor2();
+            var executor3 = new TestExecutor3();
+            var model = new TestModel
+            {
+                Id = 1,
+                Name = "model 1",
+                Milliseconds = 2000
+            };
+            Pipe<TestModel, TestResult> testPipe = new TestPipe();
+            testPipe
+                .UseModel(model)
+                .UseStopWatch()
+                .AsSequential()
+                .AddExecutor(executor1)
+                .AddExecutor(executor2)
+                .AddExecutor(executor3)
+                    .SetSkipIf(x => x.Id == 1)
+                .Finish();
+
+            var result = testPipe.Run();
+            Assert.Equal(ExecutionResult.Successful, result.Success);
+            Assert.True(testPipe.Elapsed.TotalMilliseconds < 6000);
+        }
+
+        [Fact]
+        public void Pipe_Execution_Sequential_BreakIfFailed()
+        {
+            var executor1 = new TestExecutor1();
+            var executor2 = new TestExecutor2();
+            var executor3 = new TestExecutor3();
+            var model = new TestModel
+            {
+                Id = 1,
+                Name = "model 1",
+                Milliseconds = 2000
+            };
+            Pipe<TestModel, TestResult> testPipe = new TestPipe();
+            testPipe
+                .UseModel(model)
+                .UseStopWatch()
+                .AsSequential()
+                .AddExecutor(executor1)
+                    .SetBreakIfFailed()
+                .AddExecutor(executor2)
+                .AddExecutor(executor3)
+                .Finish();
+
+            var result = testPipe.Run();
+            Assert.Equal(ExecutionResult.Unsuccessful, result.Success);
+            Assert.True(testPipe.Elapsed.TotalMilliseconds < 6000/2);
+        }
     }
 }

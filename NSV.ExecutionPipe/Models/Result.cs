@@ -27,7 +27,7 @@ namespace NSV.ExecutionPipe.Models
             }
         }
 
-        public static PipeResult<T> DefaultSuccessBreak
+        public static PipeResult<T> DefaultSuccessfulBreak
         {
             get
             {

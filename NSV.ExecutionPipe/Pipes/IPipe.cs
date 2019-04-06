@@ -27,23 +27,26 @@ namespace NSV.ExecutionPipe.Pipes
 
     public interface ISequentialPipe<M,R>: IBasePipe<M, R>
     {
-        ISequentialPipe<M, R> SetBreakIfFailed(bool value = true);
-        ISequentialPipe<M, R> SetAllowBreak(bool value = true);
+        ISequentialPipe<M, R> SetBreakIfFailed();
+        ISequentialPipe<M, R> SetAllowBreak();
         ISequentialPipe<M, R> SetResultHandler(Func<M, PipeResult<R>, PipeResult<R>> handler);
+
+        ISequentialPipe<M, R> AddExecutor(IExecutor<M, R> executor);
+        ISequentialPipe<M, R> SetModel(M model);
+        ISequentialPipe<M, R> SetSkipIf(Func<M, bool> condition);
+        ISequentialPipe<M, R> SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition);
     }
 
     public interface IParallelPipe<M, R>: IBasePipe<M, R>
     {
-
+        IParallelPipe<M, R> AddExecutor(IExecutor<M, R> executor);
+        IParallelPipe<M, R> SetModel(M model);
+        IParallelPipe<M, R> SetSkipIf(Func<M, bool> condition);
+        IParallelPipe<M, R> SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition);
     }
 
     public interface IBasePipe<M, R>
     {
-        IBasePipe<M, R> AddExecutor(IExecutor<M, R> executor);
-        IBasePipe<M, R> SetModel(M model);
-        IBasePipe<M, R> SetSkipIf(Func<M, bool> condition);
-        IBasePipe<M, R> SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition);
-
         IPipe<M, R> Finish();
     }
- }
+}

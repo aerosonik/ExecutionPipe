@@ -20,7 +20,7 @@ namespace NSV.ExecutionPipe.xTests
                 Id = 1,
                 Text = "Test Result 1"
             };
-            return PipeResult<TestResult>.DefaultSuccessful.SetValue(testResult);
+            return PipeResult<TestResult>.DefaultUnSuccessful.SetValue(testResult);
         }
 
         public override async Task<PipeResult<TestResult>> ExecuteAsync()
@@ -47,7 +47,7 @@ namespace NSV.ExecutionPipe.xTests
                 Id = 2,
                 Text = "Test Result 2"
             };
-            return PipeResult<TestResult>.DefaultSuccessful.SetValue(testResult);
+            return PipeResult<TestResult>.DefaultSuccessfulBreak.SetValue(testResult);
         }
 
         public override async Task<PipeResult<TestResult>> ExecuteAsync()
@@ -59,7 +59,7 @@ namespace NSV.ExecutionPipe.xTests
                 Id = 2,
                 Text = "Test Result 2"
             };
-            return PipeResult<TestResult>.DefaultSuccessful.SetValue(testResult);
+            return PipeResult<TestResult>.DefaultSuccessfulBreak.SetValue(testResult);
         }
     }
 

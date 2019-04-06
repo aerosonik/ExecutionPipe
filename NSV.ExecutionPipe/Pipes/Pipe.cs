@@ -36,7 +36,8 @@ namespace NSV.ExecutionPipe.Pipes
             return this;
         }
 
-        public IBasePipe<M, R> AddExecutor(IExecutor<M, R> executor)
+        #region AddExecutor(IExecutor<M, R> executor)
+        private Pipe<M, R> AddExecutor(IExecutor<M, R> executor)
         {
             executor.LocalCache = this;
             executor.Model = _model.Value;
@@ -44,32 +45,78 @@ namespace NSV.ExecutionPipe.Pipes
             _current = executor;
             return this;
         }
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.AddExecutor(IExecutor<M, R> executor)
+        {
+            return AddExecutor(executor);
+        }
+        IParallelPipe<M, R> IParallelPipe<M, R>.AddExecutor(IExecutor<M, R> executor)
+        {
+            return AddExecutor(executor);
+        }
+        #endregion
 
-        public IBasePipe<M, R> SetModel(M model)
+        #region SetModel(M model)
+        private Pipe<M, R> SetModel(M model)
         {
             _current.Model = model;
             return this;
         }
 
-        public IBasePipe<M, R> SetSkipIf(Func<M, bool> condition)
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetModel(M model)
+        {
+            return SetModel(model);
+        }
+
+        IParallelPipe<M, R> IParallelPipe<M, R>.SetModel(M model)
+        {
+            return SetModel(model);
+        }
+        #endregion
+
+        #region SetSkipIf(Func<M, bool> condition)
+        private Pipe<M, R> SetSkipIf(Func<M, bool> condition)
         {
             _current.SkipCondition = condition;
             return this;
         }
 
-        public ISequentialPipe<M, R> SetBreakIfFailed(bool value = true)
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetSkipIf(Func<M, bool> condition)
+        {
+            return SetSkipIf(condition);
+        }
+        IParallelPipe<M, R> IParallelPipe<M, R>.SetSkipIf(Func<M, bool> condition)
+        {
+            return SetSkipIf(condition);
+        }
+        #endregion
+
+        #region SetBreakIfFailed(bool value = true)
+        private Pipe<M, R> SetBreakIfFailed(bool value = true)
         {
             _current.BreakIfFailed = value;
             return this;
         }
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetBreakIfFailed()
+        {
+            return SetBreakIfFailed(true);
+        }
 
-        public ISequentialPipe<M, R> SetAllowBreak(bool value = true)
+        #endregion
+
+        #region SetAllowBreak(bool value = true)
+        private ISequentialPipe<M, R> SetAllowBreak(bool value = true)
         {
             _current.AllowBreak = value;
             return this;
         }
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetAllowBreak()
+        {
+            return SetAllowBreak(true);
+        }
+        #endregion
 
-        public IBasePipe<M, R> SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition)
+        #region SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition)
+        private Pipe<M, R> SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition = null)
         {
             if (_current is IPipeExecutor<M, R> && pipe != null)
             {
@@ -79,8 +126,17 @@ namespace NSV.ExecutionPipe.Pipes
             }
             return this;
         }
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition)
+        {
+            return SetSubPipe(pipe, condition);
+        }
+        IParallelPipe<M, R> IParallelPipe<M, R>.SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition)
+        {
+            return SetSubPipe(pipe, condition);
+        }
+        #endregion
 
-        public ISequentialPipe<M, R> SetResultHandler(Func<M, PipeResult<R>, PipeResult<R>> handler)
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetResultHandler(Func<M, PipeResult<R>, PipeResult<R>> handler)
         {
             _current.CreateResult = handler;
             return this;
@@ -286,11 +342,11 @@ namespace NSV.ExecutionPipe.Pipes
                     var pipeResult = await x.ExecuteAsync();
                     var subPipeResult = await RunSubPipeAsync(x);
                     return subPipeResult.Success == ExecutionResult.Initial
-                        ? new [] { pipeResult }
-                        : new [] { pipeResult, subPipeResult };
+                        ? new[] { pipeResult }
+                        : new[] { pipeResult, subPipeResult };
                 });
 
-            var result =  await Task.WhenAll(paralelResults);
+            var result = await Task.WhenAll(paralelResults);
             return result.SelectMany(x => x).ToArray();
         }
 
@@ -335,7 +391,6 @@ namespace NSV.ExecutionPipe.Pipes
             }
             return PipeResult<R>.Default;
         }
-
         #endregion
 
     }
