@@ -20,6 +20,8 @@ namespace NSV.ExecutionPipe.Executors
 
         public Func<M, bool> SkipCondition { get; set; }
 
+        public bool IsAsync { get; set; } = true;
+
         public abstract PipeResult<R> Execute();
 
         public abstract Task<PipeResult<R>> ExecuteAsync();

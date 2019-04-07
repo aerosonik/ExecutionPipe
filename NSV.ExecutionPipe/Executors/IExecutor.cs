@@ -16,6 +16,8 @@ namespace NSV.ExecutionPipe.Executors
 
         bool AllowBreak { get; set; }
 
+        bool IsAsync { get; set; }
+
         Optional<M> Model { get; set; }
 
         Func<M, bool> SkipCondition { get; set; }

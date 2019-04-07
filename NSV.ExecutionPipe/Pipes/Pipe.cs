@@ -313,8 +313,10 @@ namespace NSV.ExecutionPipe.Pipes
                 var item = _executionQueue.Dequeue();
                 if (item.SkipCondition != null && item.SkipCondition(item.Model))
                     continue;
-
-                await ExecuteSubPipeAsync(item, _results.Value);
+                if(item.IsAsync)
+                    await ExecuteSubPipeAsync(item, _results.Value);
+                else
+                    ExecuteSubPipe(item, _results.Value);
 
                 var result = await item.ExecuteAsync();
                 _results.Value.Add(result);
@@ -367,14 +369,18 @@ namespace NSV.ExecutionPipe.Pipes
             return result.SelectMany(x => x).ToArray();
         }
 
-        private void ExecuteSubPipe(IExecutor<M, R> executor, List<PipeResult<R>> results)
+        private void ExecuteSubPipe(
+            IExecutor<M, R> executor, 
+            List<PipeResult<R>> results)
         {
             var subPipeResult = RunSubPipe(executor);
             if (subPipeResult.Success != ExecutionResult.Initial)
                 results.Add(subPipeResult);
         }
 
-        private async Task ExecuteSubPipeAsync(IExecutor<M, R> executor, List<PipeResult<R>> results)
+        private async Task ExecuteSubPipeAsync(
+            IExecutor<M, R> executor, 
+            List<PipeResult<R>> results)
         {
             var subPipeResult = await RunSubPipeAsync(executor);
             if (subPipeResult.Success != ExecutionResult.Initial)
