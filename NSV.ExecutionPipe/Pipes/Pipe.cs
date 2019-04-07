@@ -11,7 +11,11 @@ using System.Collections.Concurrent;
 
 namespace NSV.ExecutionPipe.Pipes
 {
-    public abstract class Pipe<M, R> : IPipe<M, R>, IParallelPipe<M, R>, ISequentialPipe<M, R>, ILocalCache
+    public abstract class Pipe<M, R> : 
+        IPipe<M, R>, 
+        IParallelPipe<M, R>, 
+        ISequentialPipe<M, R>, 
+        ILocalCache
     {
         private PipeExecutionType _type = PipeExecutionType.None;
         private bool _finished = false;
@@ -26,12 +30,18 @@ namespace NSV.ExecutionPipe.Pipes
 
         public IParallelPipe<M, R> AsParallel()
         {
+            if (_finished)
+                throw new Exception(Const.PipeIsAlreadyFinished);
+
             _type = PipeExecutionType.Parallel;
             return this;
         }
 
         public ISequentialPipe<M, R> AsSequential()
         {
+            if (_finished)
+                throw new Exception(Const.PipeIsAlreadyFinished);
+
             _type = PipeExecutionType.Sequential;
             _results = new List<PipeResult<R>>();
             return this;
@@ -158,12 +168,18 @@ namespace NSV.ExecutionPipe.Pipes
 
         public IPipe<M, R> UseLocalCacheThreadSafe()
         {
+            if (_finished)
+                throw new Exception(Const.PipeIsAlreadyFinished);
+
             _localCache = new ConcurrentDictionary<object, object>();
             return this;
         }
 
         public IPipe<M, R> UseLocalCache()
         {
+            if (_finished)
+                throw new Exception(Const.PipeIsAlreadyFinished);
+
             _localCache = new Dictionary<object, object>();
             return this;
         }
