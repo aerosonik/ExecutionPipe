@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace NSV.ExecutionPipe.Models
@@ -94,7 +95,8 @@ namespace NSV.ExecutionPipe.Models
         Unsuccessful
     }
 
-    public static class ResultExtensions {
+    public static class ResultExtensions
+    {
         public static PipeResult<T> SetValue<T>(this PipeResult<T> pipeResult, T value)
         {
             pipeResult.Value = value;
@@ -147,6 +149,57 @@ namespace NSV.ExecutionPipe.Models
         {
             pipeResult.Success = result;
             return pipeResult;
+        }
+
+
+        public static string[] AllErrors<T>(this PipeResult<T>[] results)
+        {
+            return results
+                        .Where(x => x.Success == ExecutionResult.Unsuccessful &&
+                                    x.Errors.HasValue)
+                        .SelectMany(x => x.Errors.Value)
+                        .ToArray();
+        }
+
+        public static Exception[] AllExceptions<T>(this PipeResult<T>[] results)
+        {
+            return results
+                        .Where(x => x.Success == ExecutionResult.Unsuccessful &&
+                                    x.Exceptions.HasValue)
+                        .SelectMany(x => x.Exceptions.Value)
+                        .ToArray();
+        }
+
+        public static ExecutionResult AllSuccess<T>(this PipeResult<T>[] results)
+        {
+            return results.All(x => x.Success == ExecutionResult.Successful)
+                    ? ExecutionResult.Successful
+                    : results
+                        .All(x => x.Success == ExecutionResult.Initial)
+                        ? ExecutionResult.Initial
+                        : ExecutionResult.Unsuccessful;
+        }
+
+        public static ExecutionResult AllExecutedSuccess<T>(this PipeResult<T>[] results)
+        {
+            return results
+                .Where(x => x.Success != ExecutionResult.Initial)
+                .All(x => x.Success == ExecutionResult.Successful)
+                    ? ExecutionResult.Successful
+                    : results
+                        .All(x => x.Success == ExecutionResult.Initial)
+                        ? ExecutionResult.Initial
+                        : ExecutionResult.Unsuccessful;
+        }
+
+        public static ExecutionResult AnySuccess<T>(this PipeResult<T>[] results)
+        {
+            return results.Any(x => x.Success == ExecutionResult.Successful)
+                    ? ExecutionResult.Successful
+                    : results
+                        .All(x => x.Success == ExecutionResult.Initial)
+                        ? ExecutionResult.Initial
+                        : ExecutionResult.Unsuccessful;
         }
     }
 }

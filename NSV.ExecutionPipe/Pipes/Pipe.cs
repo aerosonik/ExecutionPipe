@@ -21,6 +21,7 @@ namespace NSV.ExecutionPipe.Pipes
         private Optional<List<PipeResult<R>>> _results = Optional<List<PipeResult<R>>>.Default;
         private Optional<IDictionary<object, object>> _localCache = Optional<IDictionary<object, object>>.Default;
         private IExecutor<M, R> _current;
+        
         public TimeSpan Elapsed { get; private set; }
 
         public IParallelPipe<M, R> AsParallel()
@@ -391,6 +392,8 @@ namespace NSV.ExecutionPipe.Pipes
             }
             return PipeResult<R>.Default;
         }
+
+        
         #endregion
 
     }

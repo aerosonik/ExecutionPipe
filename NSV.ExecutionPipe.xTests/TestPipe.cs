@@ -9,33 +9,19 @@ namespace NSV.ExecutionPipe.xTests
 {
     public class TestPipe : Pipe<TestModel, TestResult>
     {
-        public override PipeResult<TestResult> CreateResult(TestModel model, PipeResult<TestResult>[] results)
+        public override PipeResult<TestResult> CreateResult(
+            TestModel model,
+            PipeResult<TestResult>[] results)
         {
             if (results != null && results.Length > 0)
             {
-                var success = results
-                    .Any(x => x.Success == ExecutionResult.Successful)
-                    ? ExecutionResult.Successful
-                    : results
-                        .All(x => x.Success == ExecutionResult.Initial)
-                        ? ExecutionResult.Initial
-                        : ExecutionResult.Unsuccessful;
-
                 return new PipeResult<TestResult>
                 {
-                    Errors = results
-                        .Where(x => x.Success != ExecutionResult.Initial)
-                        .Where(x => x.Errors.HasValue)
-                        .SelectMany(x => x.Errors.Value)
-                        .ToArray(),
+                    Errors = results.AllErrors(),
 
-                    Exceptions = results
-                        .Where(x => x.Success != ExecutionResult.Initial)
-                        .Where(x => x.Exceptions.HasValue)
-                        .SelectMany(x => x.Exceptions.Value)
-                        .ToArray(),
+                    Exceptions = results.AllExceptions(),
 
-                    Success = success,
+                    Success = results.AnySuccess(),
 
                     Value = results
                         .Where(x => x.Success != ExecutionResult.Initial)

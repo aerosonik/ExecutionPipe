@@ -22,7 +22,6 @@ namespace NSV.ExecutionPipe.Pipes
         IPipe<M, R> UseModel(M model = default);
         IPipe<M, R> UseLocalCacheThreadSafe();
         IPipe<M, R> UseLocalCache();
-
     }
 
     public interface ISequentialPipe<M,R>: IBasePipe<M, R>
