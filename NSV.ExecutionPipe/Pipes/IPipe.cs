@@ -13,6 +13,7 @@ namespace NSV.ExecutionPipe.Pipes
 
         PipeResult<R> Run();
         Task<PipeResult<R>> RunAsync();
+
         PipeResult<R> CreateResult(M model, PipeResult<R>[] results);
 
         IParallelPipe<M, R> AsParallel();

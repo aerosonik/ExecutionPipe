@@ -11,10 +11,10 @@ using System.Collections.Concurrent;
 
 namespace NSV.ExecutionPipe.Pipes
 {
-    public abstract class Pipe<M, R> : 
-        IPipe<M, R>, 
-        IParallelPipe<M, R>, 
-        ISequentialPipe<M, R>, 
+    public abstract class Pipe<M, R> :
+        IPipe<M, R>,
+        IParallelPipe<M, R>,
+        ISequentialPipe<M, R>,
         ILocalCache
     {
         private PipeExecutionType _type = PipeExecutionType.None;
@@ -25,7 +25,7 @@ namespace NSV.ExecutionPipe.Pipes
         private Optional<List<PipeResult<R>>> _results = Optional<List<PipeResult<R>>>.Default;
         private Optional<IDictionary<object, object>> _localCache = Optional<IDictionary<object, object>>.Default;
         private IExecutor<M, R> _current;
-        
+
         public TimeSpan Elapsed { get; private set; }
 
         public IParallelPipe<M, R> AsParallel()
@@ -51,7 +51,7 @@ namespace NSV.ExecutionPipe.Pipes
         private Pipe<M, R> AddExecutor(IExecutor<M, R> executor)
         {
             executor.LocalCache = this;
-            executor.Model = _model.Value;
+            executor.Model = _model;
             _executionQueue.Enqueue(executor);
             _current = executor;
             return this;
@@ -162,8 +162,18 @@ namespace NSV.ExecutionPipe.Pipes
 
         public IPipe<M, R> UseModel(M model = default)
         {
+            if (_model.HasValue)
+                return this;
+
             _model = model;
+            if (!_finished)
+                return this;
+
+            foreach (var item in _executionQueue.AsEnumerable())
+                item.Model = _model;
+
             return this;
+
         }
 
         public IPipe<M, R> UseLocalCacheThreadSafe()
@@ -313,7 +323,7 @@ namespace NSV.ExecutionPipe.Pipes
                 var item = _executionQueue.Dequeue();
                 if (item.SkipCondition != null && item.SkipCondition(item.Model))
                     continue;
-                if(item.IsAsync)
+                if (item.IsAsync)
                     await ExecuteSubPipeAsync(item, _results.Value);
                 else
                     ExecuteSubPipe(item, _results.Value);
@@ -370,7 +380,7 @@ namespace NSV.ExecutionPipe.Pipes
         }
 
         private void ExecuteSubPipe(
-            IExecutor<M, R> executor, 
+            IExecutor<M, R> executor,
             List<PipeResult<R>> results)
         {
             var subPipeResult = RunSubPipe(executor);
@@ -379,7 +389,7 @@ namespace NSV.ExecutionPipe.Pipes
         }
 
         private async Task ExecuteSubPipeAsync(
-            IExecutor<M, R> executor, 
+            IExecutor<M, R> executor,
             List<PipeResult<R>> results)
         {
             var subPipeResult = await RunSubPipeAsync(executor);
@@ -415,7 +425,7 @@ namespace NSV.ExecutionPipe.Pipes
             return PipeResult<R>.Default;
         }
 
-        
+
         #endregion
 
     }
