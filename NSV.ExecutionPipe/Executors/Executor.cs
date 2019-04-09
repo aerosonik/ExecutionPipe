@@ -15,8 +15,6 @@ namespace NSV.ExecutionPipe.Executors
 
         public bool AllowBreak { get; set; }
 
-        public Optional<M> Model { get; set; }
-
         public Func<M, PipeResult<R>, PipeResult<R>> CreateResult { get; set; }
 
         public Func<M, bool> SkipCondition { get; set; }
@@ -29,30 +27,30 @@ namespace NSV.ExecutionPipe.Executors
 
         public bool UseStopWatch { get; set; }      
 
-        public abstract PipeResult<R> Execute();
+        public abstract PipeResult<R> Execute(M model);
 
-        public abstract Task<PipeResult<R>> ExecuteAsync();
+        public abstract Task<PipeResult<R>> ExecuteAsync(M model);
 
-        public PipeResult<R> Run()
+        public PipeResult<R> Run(M model)
         {
             if (!UseStopWatch)
-                return Execute().SetLabel(Label);
+                return Execute(model).SetLabel(Label);
 
             var sw = new Stopwatch();
             sw.Start();
-            var result = Execute();
+            var result = Execute(model);
             sw.Stop();
             return result.SetElapsed(sw.Elapsed).SetLabel(Label);
         }
 
-        public async Task<PipeResult<R>> RunAsync()
+        public async Task<PipeResult<R>> RunAsync(M model)
         {
             if (!UseStopWatch)
-                return (await ExecuteAsync()).SetLabel(Label);
+                return (await ExecuteAsync(model)).SetLabel(Label);
 
             var sw = new Stopwatch();
             sw.Start();
-            var result = await ExecuteAsync();
+            var result = await ExecuteAsync(model);
             sw.Stop();
             return result.SetElapsed(sw.Elapsed).SetLabel(Label);
         }

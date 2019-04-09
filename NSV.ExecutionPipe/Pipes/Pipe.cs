@@ -61,14 +61,7 @@ namespace NSV.ExecutionPipe.Pipes
                 return this;
 
             _model = model;
-            if (!_finished)
-                return this;
-
-            foreach (var item in _executionQueue.AsEnumerable())
-                item.Model = _model;
-
             return this;
-
         }
 
         public IPipe<M, R> UseLocalCacheThreadSafe()
@@ -173,10 +166,6 @@ namespace NSV.ExecutionPipe.Pipes
         {
             return AddExecutor(executor);
         }
-        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetModel(M model)
-        {
-            return SetModel(model);
-        }
         ISequentialPipe<M, R> ISequentialPipe<M, R>.SetSkipIf(Func<M, bool> condition)
         {
             return SetSkipIf(condition);
@@ -220,10 +209,6 @@ namespace NSV.ExecutionPipe.Pipes
         IParallelPipe<M, R> IParallelPipe<M, R>.AddExecutor(IExecutor<M, R> executor)
         {
             return AddExecutor(executor);
-        }
-        IParallelPipe<M, R> IParallelPipe<M, R>.SetModel(M model)
-        {
-            return SetModel(model);
         }
         IParallelPipe<M, R> IParallelPipe<M, R>.SetSkipIf(Func<M, bool> condition)
         {
@@ -270,17 +255,17 @@ namespace NSV.ExecutionPipe.Pipes
             while (_executionQueue.Count > 0)
             {
                 var item = _executionQueue.Dequeue();
-                if (item.SkipCondition != null && item.SkipCondition(item.Model))
+                if (item.SkipCondition != null && item.SkipCondition(_model))
                     continue;
 
                 ExecuteSubPipe(item, _results.Value);
 
-                var result = item.Run();
+                var result = item.Run(_model);
                 if (item.Retry.HasValue && result.Success == ExecutionResult.Unsuccessful)
                 {
                     for (int i = 0; i < item.Retry.Value.Count; i++)
                     {
-                        result = item.Run();
+                        result = item.Run(_model);
                         if (result.Success == ExecutionResult.Successful)
                             break;
                     }
@@ -313,19 +298,19 @@ namespace NSV.ExecutionPipe.Pipes
             while (_executionQueue.Count > 0)
             {
                 var item = _executionQueue.Dequeue();
-                if (item.SkipCondition != null && item.SkipCondition(item.Model))
+                if (item.SkipCondition != null && item.SkipCondition(_model))
                     continue;
                 if (item.IsAsync)
                     await ExecuteSubPipeAsync(item, _results.Value);
                 else
                     ExecuteSubPipe(item, _results.Value);
 
-                var result = await item.RunAsync();
+                var result = await item.RunAsync(_model);
                 if (item.Retry.HasValue && result.Success == ExecutionResult.Unsuccessful)
                 {
                     for (int i = 0; i < item.Retry.Value.Count; i++)
                     {
-                        result = await item.RunAsync();
+                        result = await item.RunAsync(_model);
                         if (result.Success == ExecutionResult.Successful)
                             break;
                     }
@@ -352,7 +337,7 @@ namespace NSV.ExecutionPipe.Pipes
                 .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
                 .SelectMany(x =>
                 {
-                    var pipeResult = x.Execute();
+                    var pipeResult = x.Run(_model);
                     var subPipeResult = RunSubPipe(x);
                     return subPipeResult.Success == ExecutionResult.Initial
                         ? new[] { pipeResult }
@@ -369,7 +354,7 @@ namespace NSV.ExecutionPipe.Pipes
                 .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
                 .Select(async x =>
                 {
-                    var pipeResult = await x.ExecuteAsync();
+                    var pipeResult = await x.RunAsync(_model);
                     var subPipeResult = await RunSubPipeAsync(x);
                     return subPipeResult.Success == ExecutionResult.Initial
                         ? new[] { pipeResult }
@@ -427,14 +412,9 @@ namespace NSV.ExecutionPipe.Pipes
         private Pipe<M, R> AddExecutor(IExecutor<M, R> executor)
         {
             executor.LocalCache = this;
-            executor.Model = _model;
+            //executor.Model = _model;
             _executionQueue.Enqueue(executor);
             _current = executor;
-            return this;
-        }
-        private Pipe<M, R> SetModel(M model)
-        {
-            _current.Model = model;
             return this;
         }
         private Pipe<M, R> SetSkipIf(Func<M, bool> condition)

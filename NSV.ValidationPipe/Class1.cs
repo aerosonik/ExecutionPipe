@@ -33,7 +33,7 @@ namespace NSV.ValidationPipe
         IValidatorCreator<M1> Collection<M1>(Expression<Func<M, IEquatable<M1>>> field);
 
         IValidatorCreator<M1> Validator<M1>(IValidator<M1> validator);
-        IValidatorCreator<M> When<M1>(Func<M1, bool> condition);
+        //IValidatorCreator<M> When<M1>(Func<M1, bool> condition);
         IValidatorCreator<M> When(Func<M, bool> condition);
         IValidationPipe<M> Add();
     }
@@ -42,6 +42,9 @@ namespace NSV.ValidationPipe
     {
         IValidationPipeCreator<M> ForField<M1>(Expression<Func<M, M1>> field);
         IValidationPipeCreator<M> ForCollection<M1>(Expression<Func<M, IEquatable<M1>>> field);
+        IValidationPipeCreator<M> Pipe<M1>(IValidationPipe<M1> pipe);
+        IValidationPipeCreator<M> When(Func<M, bool> condition);
+        IValidationPipe<M> Add();
     }
 
     public interface IValidator<M>

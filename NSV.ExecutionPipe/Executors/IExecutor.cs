@@ -24,17 +24,15 @@ namespace NSV.ExecutionPipe.Executors
 
         bool UseStopWatch { get; set; }
 
-        Optional<M> Model { get; set; }
-
         Func<M, bool> SkipCondition { get; set; }
 
-        PipeResult<R> Run();
+        PipeResult<R> Run(M model);
 
-        Task<PipeResult<R>> RunAsync();
+        Task<PipeResult<R>> RunAsync(M model);
 
-        PipeResult<R> Execute();
+        PipeResult<R> Execute(M model);
 
-        Task<PipeResult<R>> ExecuteAsync();
+        Task<PipeResult<R>> ExecuteAsync(M model);
 
         Func<M, PipeResult<R>, PipeResult<R>> CreateResult { get; set; }
     }

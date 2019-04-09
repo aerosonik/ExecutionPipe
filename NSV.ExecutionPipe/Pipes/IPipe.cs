@@ -29,7 +29,6 @@ namespace NSV.ExecutionPipe.Pipes
         ISequentialPipe<M, R> SetResultHandler(Func<M, PipeResult<R>, PipeResult<R>> handler);
 
         ISequentialPipe<M, R> AddExecutor(IExecutor<M, R> executor);
-        ISequentialPipe<M, R> SetModel(M model);
         ISequentialPipe<M, R> SetSkipIf(Func<M, bool> condition);
         ISequentialPipe<M, R> SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition);
         ISequentialPipe<M, R> SetUseStopWatch();
@@ -40,7 +39,6 @@ namespace NSV.ExecutionPipe.Pipes
     public interface IParallelPipe<M, R>: IBasePipe<M, R>
     {
         IParallelPipe<M, R> AddExecutor(IExecutor<M, R> executor);
-        IParallelPipe<M, R> SetModel(M model);
         IParallelPipe<M, R> SetSkipIf(Func<M, bool> condition);
         IParallelPipe<M, R> SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition);
         IParallelPipe<M, R> SetUseStopWatch();
