@@ -112,25 +112,29 @@ namespace NSV.ExecutionPipe.Models
 
         public static PipeResult<T> SetErrors<T>(this PipeResult<T> pipeResult, string[] errors)
         {
-            pipeResult.Errors = errors;
+            if (errors != null)
+                pipeResult.Errors = errors;
             return pipeResult;
         }
 
         public static PipeResult<T> SetError<T>(this PipeResult<T> pipeResult, string error)
         {
-            pipeResult.Errors = new string[] { error };
+            if(!string.IsNullOrWhiteSpace(error))
+                pipeResult.Errors = new string[] { error };
             return pipeResult;
         }
 
         public static PipeResult<T> SetException<T>(this PipeResult<T> pipeResult, Exception[] exceptions)
         {
-            pipeResult.Exceptions = exceptions;
+            if(exceptions != null)
+                pipeResult.Exceptions = exceptions;
             return pipeResult;
         }
 
         public static PipeResult<T> SetException<T>(this PipeResult<T> pipeResult, Exception exception)
         {
-            pipeResult.Exceptions = new Exception[] { exception };
+            if(exception != null)
+                pipeResult.Exceptions = new Exception[] { exception };
             return pipeResult;
         }
 
