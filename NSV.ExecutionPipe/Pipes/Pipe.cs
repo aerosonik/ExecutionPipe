@@ -26,6 +26,8 @@ namespace NSV.ExecutionPipe.Pipes
         private Optional<IDictionary<object, object>> _localCache = Optional<IDictionary<object, object>>.Default;
         private IExecutor<M, R> _current;
 
+        #region IPipe<M, R>
+
         public TimeSpan Elapsed { get; private set; }
 
         public IParallelPipe<M, R> AsParallel()
@@ -46,113 +48,6 @@ namespace NSV.ExecutionPipe.Pipes
             _results = new List<PipeResult<R>>();
             return this;
         }
-
-        #region AddExecutor(IExecutor<M, R> executor)
-        private Pipe<M, R> AddExecutor(IExecutor<M, R> executor)
-        {
-            executor.LocalCache = this;
-            executor.Model = _model;
-            _executionQueue.Enqueue(executor);
-            _current = executor;
-            return this;
-        }
-        ISequentialPipe<M, R> ISequentialPipe<M, R>.AddExecutor(IExecutor<M, R> executor)
-        {
-            return AddExecutor(executor);
-        }
-        IParallelPipe<M, R> IParallelPipe<M, R>.AddExecutor(IExecutor<M, R> executor)
-        {
-            return AddExecutor(executor);
-        }
-        #endregion
-
-        #region SetModel(M model)
-        private Pipe<M, R> SetModel(M model)
-        {
-            _current.Model = model;
-            return this;
-        }
-
-        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetModel(M model)
-        {
-            return SetModel(model);
-        }
-
-        IParallelPipe<M, R> IParallelPipe<M, R>.SetModel(M model)
-        {
-            return SetModel(model);
-        }
-        #endregion
-
-        #region SetSkipIf(Func<M, bool> condition)
-        private Pipe<M, R> SetSkipIf(Func<M, bool> condition)
-        {
-            _current.SkipCondition = condition;
-            return this;
-        }
-
-        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetSkipIf(Func<M, bool> condition)
-        {
-            return SetSkipIf(condition);
-        }
-        IParallelPipe<M, R> IParallelPipe<M, R>.SetSkipIf(Func<M, bool> condition)
-        {
-            return SetSkipIf(condition);
-        }
-        #endregion
-
-        #region SetBreakIfFailed(bool value = true)
-        private Pipe<M, R> SetBreakIfFailed(bool value = true)
-        {
-            _current.BreakIfFailed = value;
-            return this;
-        }
-        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetBreakIfFailed()
-        {
-            return SetBreakIfFailed(true);
-        }
-
-        #endregion
-
-        #region SetAllowBreak(bool value = true)
-        private ISequentialPipe<M, R> SetAllowBreak(bool value = true)
-        {
-            _current.AllowBreak = value;
-            return this;
-        }
-        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetAllowBreak()
-        {
-            return SetAllowBreak(true);
-        }
-        #endregion
-
-        #region SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition)
-        private Pipe<M, R> SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition = null)
-        {
-            if (_current is IPipeExecutor<M, R> && pipe != null)
-            {
-                var current = (IPipeExecutor<M, R>)_current;
-                current.Pipe = pipe;
-                current.PipeExecutionCondition = condition;
-            }
-            return this;
-        }
-        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition)
-        {
-            return SetSubPipe(pipe, condition);
-        }
-        IParallelPipe<M, R> IParallelPipe<M, R>.SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition)
-        {
-            return SetSubPipe(pipe, condition);
-        }
-        #endregion
-
-        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetResultHandler(Func<M, PipeResult<R>, PipeResult<R>> handler)
-        {
-            _current.CreateResult = handler;
-            return this;
-        }
-
 
         public IPipe<M, R> UseStopWatch()
         {
@@ -194,40 +89,6 @@ namespace NSV.ExecutionPipe.Pipes
             return this;
         }
 
-        public IPipe<M, R> Finish()
-        {
-            if (_finished)
-                throw new Exception(Const.PipeIsAlreadyFinished);
-
-            _finished = true;
-            return this;
-        }
-
-        public object GetObject(object key)
-        {
-            if (!_localCache.HasValue)
-                return null;
-
-            if (_localCache.Value.TryGetValue(key, out var value))
-                return value;
-
-            return null;
-        }
-
-        public void SetObject(object key, object value)
-        {
-            if (!_localCache.HasValue)
-                return;
-
-            _localCache.Value.Add(key, value);
-        }
-
-        public ILocalCache GetLocalCacheObject()
-        {
-            return this;
-        }
-
-
         public abstract PipeResult<R> CreateResult(
             M model,
             PipeResult<R>[] results);
@@ -263,7 +124,124 @@ namespace NSV.ExecutionPipe.Pipes
             return result;
         }
 
-        #region Private
+        #endregion
+
+        #region IBasePipe<M, R>
+
+        public IPipe<M, R> Finish()
+        {
+            if (_finished)
+                throw new Exception(Const.PipeIsAlreadyFinished);
+
+            _finished = true;
+            return this;
+        }
+
+        #endregion
+
+        #region ILocalCache
+
+        public object GetObject(object key)
+        {
+            if (!_localCache.HasValue)
+                return null;
+
+            if (_localCache.Value.TryGetValue(key, out var value))
+                return value;
+
+            return null;
+        }
+
+        public void SetObject(object key, object value)
+        {
+            if (!_localCache.HasValue)
+                return;
+
+            _localCache.Value.Add(key, value);
+        }
+
+        public ILocalCache GetLocalCacheObject()
+        {
+            return this;
+        }
+
+        #endregion
+
+        #region ISequentialPipe<M,R> Explicitly
+
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.AddExecutor(IExecutor<M, R> executor)
+        {
+            return AddExecutor(executor);
+        }
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetModel(M model)
+        {
+            return SetModel(model);
+        }
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetSkipIf(Func<M, bool> condition)
+        {
+            return SetSkipIf(condition);
+        }
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetBreakIfFailed()
+        {
+            return SetBreakIfFailed(true);
+        }
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetAllowBreak()
+        {
+            return SetAllowBreak(true);
+        }
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition)
+        {
+            return SetSubPipe(pipe, condition);
+        }
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetResultHandler(Func<M, PipeResult<R>, PipeResult<R>> handler)
+        {
+            _current.CreateResult = handler;
+            return this;
+        }
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetUseStopWatch()
+        {
+            return SetUseStopWatch();
+        }
+
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetLabel(string label)
+        {
+            return SetLabel(label);
+        }
+        #endregion
+
+        #region IParallelPipe<M, R> Explicitly
+
+        IParallelPipe<M, R> IParallelPipe<M, R>.AddExecutor(IExecutor<M, R> executor)
+        {
+            return AddExecutor(executor);
+        }
+        IParallelPipe<M, R> IParallelPipe<M, R>.SetModel(M model)
+        {
+            return SetModel(model);
+        }
+        IParallelPipe<M, R> IParallelPipe<M, R>.SetSkipIf(Func<M, bool> condition)
+        {
+            return SetSkipIf(condition);
+        }
+        IParallelPipe<M, R> IParallelPipe<M, R>.SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition)
+        {
+            return SetSubPipe(pipe, condition);
+        }
+        IParallelPipe<M, R> IParallelPipe<M, R>.SetUseStopWatch()
+        {
+            return SetUseStopWatch();
+        }
+
+        IParallelPipe<M, R> IParallelPipe<M, R>.SetLabel(string label)
+        {
+            return SetLabel(label);
+        }
+
+
+        #endregion
+
+        #region Private Methods
+
         private bool Break(
             IExecutor<M, R> item,
             PipeResult<R> result)
@@ -291,7 +269,7 @@ namespace NSV.ExecutionPipe.Pipes
 
                 ExecuteSubPipe(item, _results.Value);
 
-                var result = item.Execute();
+                var result = item.Run();
                 _results.Value.Add(result);
 
                 if (Break(item, result))
@@ -328,7 +306,7 @@ namespace NSV.ExecutionPipe.Pipes
                 else
                     ExecuteSubPipe(item, _results.Value);
 
-                var result = await item.ExecuteAsync();
+                var result = await item.RunAsync();
                 _results.Value.Add(result);
 
                 if (Break(item, result))
@@ -425,6 +403,57 @@ namespace NSV.ExecutionPipe.Pipes
             return PipeResult<R>.Default;
         }
 
+
+        private Pipe<M, R> AddExecutor(IExecutor<M, R> executor)
+        {
+            executor.LocalCache = this;
+            executor.Model = _model;
+            _executionQueue.Enqueue(executor);
+            _current = executor;
+            return this;
+        }
+        private Pipe<M, R> SetModel(M model)
+        {
+            _current.Model = model;
+            return this;
+        }
+        private Pipe<M, R> SetSkipIf(Func<M, bool> condition)
+        {
+            _current.SkipCondition = condition;
+            return this;
+        }
+        private Pipe<M, R> SetBreakIfFailed(bool value = true)
+        {
+            _current.BreakIfFailed = value;
+            return this;
+        }
+        private ISequentialPipe<M, R> SetAllowBreak(bool value = true)
+        {
+            _current.AllowBreak = value;
+            return this;
+        }
+        private Pipe<M, R> SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition = null)
+        {
+            if (_current is IPipeExecutor<M, R> && pipe != null)
+            {
+                var current = (IPipeExecutor<M, R>)_current;
+                current.Pipe = pipe;
+                current.PipeExecutionCondition = condition;
+            }
+            return this;
+        }
+
+        private Pipe<M, R> SetUseStopWatch()
+        {
+            _current.UseStopWatch = true;
+            return this;
+        }
+
+        private Pipe<M, R> SetLabel(string label)
+        {
+            _current.Label = label;
+            return this;
+        }
 
         #endregion
 

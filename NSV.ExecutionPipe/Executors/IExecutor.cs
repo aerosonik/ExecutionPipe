@@ -18,9 +18,17 @@ namespace NSV.ExecutionPipe.Executors
 
         bool IsAsync { get; set; }
 
+        string Label { get; set; }
+
+        bool UseStopWatch { get; set; }
+
         Optional<M> Model { get; set; }
 
         Func<M, bool> SkipCondition { get; set; }
+
+        PipeResult<R> Run();
+
+        Task<PipeResult<R>> RunAsync();
 
         PipeResult<R> Execute();
 

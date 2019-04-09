@@ -10,12 +10,9 @@ namespace NSV.ExecutionPipe.Pipes
     public interface IPipe<M, R>
     {
         TimeSpan Elapsed { get; }
-
         PipeResult<R> Run();
         Task<PipeResult<R>> RunAsync();
-
         PipeResult<R> CreateResult(M model, PipeResult<R>[] results);
-
         IParallelPipe<M, R> AsParallel();
         ISequentialPipe<M, R> AsSequential();
 
@@ -35,6 +32,8 @@ namespace NSV.ExecutionPipe.Pipes
         ISequentialPipe<M, R> SetModel(M model);
         ISequentialPipe<M, R> SetSkipIf(Func<M, bool> condition);
         ISequentialPipe<M, R> SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition);
+        ISequentialPipe<M, R> SetUseStopWatch();
+        ISequentialPipe<M, R> SetLabel(string label);
     }
 
     public interface IParallelPipe<M, R>: IBasePipe<M, R>
@@ -43,6 +42,8 @@ namespace NSV.ExecutionPipe.Pipes
         IParallelPipe<M, R> SetModel(M model);
         IParallelPipe<M, R> SetSkipIf(Func<M, bool> condition);
         IParallelPipe<M, R> SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition);
+        IParallelPipe<M, R> SetUseStopWatch();
+        IParallelPipe<M, R> SetLabel(string label);
     }
 
     public interface IBasePipe<M, R>

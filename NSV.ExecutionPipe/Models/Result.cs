@@ -12,7 +12,8 @@ namespace NSV.ExecutionPipe.Models
         public Optional<string[]> Errors { get; set; }
         public Optional<Exception[]> Exceptions { get; set; }
         public Optional<T> Value { get; set; }
-
+        public TimeSpan Elapsed { get; set; }
+        public string Label { get; set; }
         public static PipeResult<T> Default
         {
             get
@@ -151,6 +152,17 @@ namespace NSV.ExecutionPipe.Models
             return pipeResult;
         }
 
+        public static PipeResult<T> SetElapsed<T>(this PipeResult<T> pipeResult, TimeSpan span)
+        {
+            pipeResult.Elapsed = span;
+            return pipeResult;
+        }
+
+        public static PipeResult<T> SetLabel<T>(this PipeResult<T> pipeResult, string label)
+        {
+            pipeResult.Label = label;
+            return pipeResult;
+        }
 
         public static string[] AllErrors<T>(this PipeResult<T>[] results)
         {

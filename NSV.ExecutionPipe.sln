@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.28711.60
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NSV.ExecutionPipe", "NSV.ExecutionPipe\NSV.ExecutionPipe.csproj", "{0D4B8F7B-5FBD-48B5-A0B8-D516539C7638}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NSV.ExecutionPipe.xTests", "NSV.ExecutionPipe.xTests\NSV.ExecutionPipe.xTests.csproj", "{E4F5238C-35B6-4573-973F-BC1A00E35E8C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NSV.ExecutionPipe.xTests", "NSV.ExecutionPipe.xTests\NSV.ExecutionPipe.xTests.csproj", "{E4F5238C-35B6-4573-973F-BC1A00E35E8C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NSV.ValidationPipe", "NSV.ValidationPipe\NSV.ValidationPipe.csproj", "{48A23A89-938B-492C-9CDD-E55261F8F0F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{E4F5238C-35B6-4573-973F-BC1A00E35E8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E4F5238C-35B6-4573-973F-BC1A00E35E8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E4F5238C-35B6-4573-973F-BC1A00E35E8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48A23A89-938B-492C-9CDD-E55261F8F0F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48A23A89-938B-492C-9CDD-E55261F8F0F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48A23A89-938B-492C-9CDD-E55261F8F0F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48A23A89-938B-492C-9CDD-E55261F8F0F8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
