@@ -20,6 +20,8 @@ namespace NSV.ExecutionPipe.Executors
 
         string Label { get; set; }
 
+        Optional<RetryModel> Retry { get; set; }
+
         bool UseStopWatch { get; set; }
 
         Optional<M> Model { get; set; }

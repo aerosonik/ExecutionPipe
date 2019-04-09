@@ -34,6 +34,7 @@ namespace NSV.ExecutionPipe.Pipes
         ISequentialPipe<M, R> SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition);
         ISequentialPipe<M, R> SetUseStopWatch();
         ISequentialPipe<M, R> SetLabel(string label);
+        ISequentialPipe<M, R> SetRetryIfFailed(int count, int timeOutMilliseconds);
     }
 
     public interface IParallelPipe<M, R>: IBasePipe<M, R>

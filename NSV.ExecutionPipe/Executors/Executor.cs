@@ -25,7 +25,9 @@ namespace NSV.ExecutionPipe.Executors
 
         public string Label { get; set; } = string.Empty;
 
-        public bool UseStopWatch { get; set; }
+        public Optional<RetryModel> Retry { get; set; } = Optional<RetryModel>.Default;
+
+        public bool UseStopWatch { get; set; }      
 
         public abstract PipeResult<R> Execute();
 

@@ -207,6 +207,12 @@ namespace NSV.ExecutionPipe.Pipes
         {
             return SetLabel(label);
         }
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetRetryIfFailed(
+            int count,
+            int timeOutMilliseconds)
+        {
+            return SetRetryIfFailed(count, timeOutMilliseconds);
+        }
         #endregion
 
         #region IParallelPipe<M, R> Explicitly
@@ -270,8 +276,16 @@ namespace NSV.ExecutionPipe.Pipes
                 ExecuteSubPipe(item, _results.Value);
 
                 var result = item.Run();
+                if (item.Retry.HasValue && result.Success == ExecutionResult.Unsuccessful)
+                {
+                    for (int i = 0; i < item.Retry.Value.Count; i++)
+                    {
+                        result = item.Run();
+                        if (result.Success == ExecutionResult.Successful)
+                            break;
+                    }
+                }
                 _results.Value.Add(result);
-
                 if (Break(item, result))
                 {
                     if (item.CreateResult != null)
@@ -307,6 +321,15 @@ namespace NSV.ExecutionPipe.Pipes
                     ExecuteSubPipe(item, _results.Value);
 
                 var result = await item.RunAsync();
+                if (item.Retry.HasValue && result.Success == ExecutionResult.Unsuccessful)
+                {
+                    for (int i = 0; i < item.Retry.Value.Count; i++)
+                    {
+                        result = await item.RunAsync();
+                        if (result.Success == ExecutionResult.Successful)
+                            break;
+                    }
+                }
                 _results.Value.Add(result);
 
                 if (Break(item, result))
@@ -388,7 +411,6 @@ namespace NSV.ExecutionPipe.Pipes
             }
             return PipeResult<R>.Default;
         }
-
         private async Task<PipeResult<R>> RunSubPipeAsync(IExecutor<M, R> executor)
         {
             if (executor is IPipeExecutor<M, R> pipeItem)
@@ -402,8 +424,6 @@ namespace NSV.ExecutionPipe.Pipes
             }
             return PipeResult<R>.Default;
         }
-
-
         private Pipe<M, R> AddExecutor(IExecutor<M, R> executor)
         {
             executor.LocalCache = this;
@@ -442,16 +462,23 @@ namespace NSV.ExecutionPipe.Pipes
             }
             return this;
         }
-
         private Pipe<M, R> SetUseStopWatch()
         {
             _current.UseStopWatch = true;
             return this;
         }
-
         private Pipe<M, R> SetLabel(string label)
         {
             _current.Label = label;
+            return this;
+        }
+        Pipe<M, R> SetRetryIfFailed(int count, int timeOutMilliseconds)
+        {
+            _current.Retry = new RetryModel
+            {
+                Count = count,
+                TimeOutMilliseconds = timeOutMilliseconds
+            };
             return this;
         }
 
