@@ -217,5 +217,17 @@ namespace NSV.ExecutionPipe.Models
                         ? ExecutionResult.Initial
                         : ExecutionResult.Unsuccessful;
         }
+
+        public static bool IsAllSuccess<T>(this PipeResult<T>[] results)
+        {
+            return results.All(x => x.Success == ExecutionResult.Successful);
+        }
+
+        public static bool IsAllExecutedSuccess<T>(this PipeResult<T>[] results)
+        {
+            return results
+                .Where(x => x.Success != ExecutionResult.Initial)
+                .All(x => x.Success == ExecutionResult.Successful);
+        }
     }
 }
