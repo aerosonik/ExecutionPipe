@@ -237,7 +237,7 @@ namespace NSV.ExecutionPipe.Pipes
             IExecutor<M, R> item,
             PipeResult<R> result)
         {
-            return (result.Success == ExecutionResult.Unsuccessful &&
+            return (result.Success == ExecutionResult.Failed &&
                         item.BreakIfFailed) ||
                    (result.Break && item.AllowBreak);
         }
@@ -261,7 +261,7 @@ namespace NSV.ExecutionPipe.Pipes
                 ExecuteSubPipe(item, _results.Value);
 
                 var result = item.Run(_model);
-                if (item.Retry.HasValue && result.Success == ExecutionResult.Unsuccessful)
+                if (item.Retry.HasValue && result.Success == ExecutionResult.Failed)
                 {
                     for (int i = 0; i < item.Retry.Value.Count; i++)
                     {
@@ -306,7 +306,7 @@ namespace NSV.ExecutionPipe.Pipes
                     ExecuteSubPipe(item, _results.Value);
 
                 var result = await item.RunAsync(_model);
-                if (item.Retry.HasValue && result.Success == ExecutionResult.Unsuccessful)
+                if (item.Retry.HasValue && result.Success == ExecutionResult.Failed)
                 {
                     for (int i = 0; i < item.Retry.Value.Count; i++)
                     {

@@ -157,7 +157,7 @@ namespace NSV.ExecutionPipe.xTests
                 .Finish();
 
             var result = testPipe.Run();
-            Assert.Equal(ExecutionResult.Unsuccessful, result.Success);
+            Assert.Equal(ExecutionResult.Failed, result.Success);
             Assert.True(testPipe.Elapsed.TotalMilliseconds < 6000/2);
         }
 

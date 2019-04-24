@@ -69,10 +69,11 @@ namespace NSV.ExecutionPipe.Models
                     Break = true,
                     Errors = Optional<string[]>.Default,
                     Exceptions = Optional<Exception[]>.Default,
-                    Success = ExecutionResult.Unsuccessful
+                    Success = ExecutionResult.Failed
                 };
             }
         }
+
         public static PipeResult<T> DefaultUnSuccessful
         {
             get
@@ -83,7 +84,7 @@ namespace NSV.ExecutionPipe.Models
                     Break = true,
                     Errors = Optional<string[]>.Default,
                     Exceptions = Optional<Exception[]>.Default,
-                    Success = ExecutionResult.Unsuccessful
+                    Success = ExecutionResult.Failed
                 };
             }
         }
@@ -93,7 +94,7 @@ namespace NSV.ExecutionPipe.Models
     {
         Initial,
         Successful,
-        Unsuccessful
+        Failed
     }
 
     public static class ResultExtensions
@@ -146,7 +147,7 @@ namespace NSV.ExecutionPipe.Models
 
         public static PipeResult<T> SetUnSuccessful<T>(this PipeResult<T> pipeResult)
         {
-            pipeResult.Success = ExecutionResult.Unsuccessful;
+            pipeResult.Success = ExecutionResult.Failed;
             return pipeResult;
         }
 
@@ -171,7 +172,7 @@ namespace NSV.ExecutionPipe.Models
         public static string[] AllErrors<T>(this PipeResult<T>[] results)
         {
             return results
-                        .Where(x => x.Success == ExecutionResult.Unsuccessful &&
+                        .Where(x => x.Success == ExecutionResult.Failed &&
                                     x.Errors.HasValue)
                         .SelectMany(x => x.Errors.Value)
                         .ToArray();
@@ -180,7 +181,7 @@ namespace NSV.ExecutionPipe.Models
         public static Exception[] AllExceptions<T>(this PipeResult<T>[] results)
         {
             return results
-                        .Where(x => x.Success == ExecutionResult.Unsuccessful &&
+                        .Where(x => x.Success == ExecutionResult.Failed &&
                                     x.Exceptions.HasValue)
                         .SelectMany(x => x.Exceptions.Value)
                         .ToArray();
@@ -193,7 +194,7 @@ namespace NSV.ExecutionPipe.Models
                     : results
                         .All(x => x.Success == ExecutionResult.Initial)
                         ? ExecutionResult.Initial
-                        : ExecutionResult.Unsuccessful;
+                        : ExecutionResult.Failed;
         }
 
         public static ExecutionResult AllExecutedSuccess<T>(this PipeResult<T>[] results)
@@ -205,7 +206,7 @@ namespace NSV.ExecutionPipe.Models
                     : results
                         .All(x => x.Success == ExecutionResult.Initial)
                         ? ExecutionResult.Initial
-                        : ExecutionResult.Unsuccessful;
+                        : ExecutionResult.Failed;
         }
 
         public static ExecutionResult AnySuccess<T>(this PipeResult<T>[] results)
@@ -215,7 +216,7 @@ namespace NSV.ExecutionPipe.Models
                     : results
                         .All(x => x.Success == ExecutionResult.Initial)
                         ? ExecutionResult.Initial
-                        : ExecutionResult.Unsuccessful;
+                        : ExecutionResult.Failed;
         }
 
         public static bool IsAllSuccess<T>(this PipeResult<T>[] results)
