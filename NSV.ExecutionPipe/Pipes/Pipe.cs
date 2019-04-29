@@ -305,7 +305,10 @@ namespace NSV.ExecutionPipe.Pipes
                 else
                     ExecuteSubPipe(item, _results.Value);
 
-                var result = await item.RunAsync(_model);
+                var result = item.IsAsync
+                    ? await item.RunAsync(_model)
+                    : item.Run(_model);
+
                 if (item.Retry.HasValue && result.Success == ExecutionResult.Failed)
                 {
                     for (int i = 0; i < item.Retry.Value.Count; i++)

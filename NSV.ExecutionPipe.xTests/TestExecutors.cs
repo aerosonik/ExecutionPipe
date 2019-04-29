@@ -11,6 +11,10 @@ namespace NSV.ExecutionPipe.xTests
 {
     public class TestExecutor1 : Executor<TestModel, TestResult>
     {
+        public TestExecutor1()
+        {
+            IsAsync = true;
+        }
         public override PipeResult<TestResult> Execute(TestModel model)
         {
             Thread.Sleep(model.Milliseconds);
@@ -38,6 +42,10 @@ namespace NSV.ExecutionPipe.xTests
 
     public class TestExecutor2 : Executor<TestModel, TestResult>
     {
+        public TestExecutor2()
+        {
+            IsAsync = false;
+        }
         public override PipeResult<TestResult> Execute(TestModel model)
         {
             Thread.Sleep(model.Milliseconds);
@@ -65,6 +73,10 @@ namespace NSV.ExecutionPipe.xTests
 
     public class TestExecutor3 : Executor<TestModel, TestResult>
     {
+        public TestExecutor3()
+        {
+            IsAsync = false;
+        }
         public override PipeResult<TestResult> Execute(TestModel model)
         {
             Thread.Sleep(model.Milliseconds);
