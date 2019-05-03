@@ -26,7 +26,8 @@ namespace NSV.ExecutionPipe.xTests
                     Value = results
                         .Where(x => x.Success != ExecutionResult.Initial)
                         .Where(x => x.Value.HasValue)
-                        .FirstOrDefault().Value.Value ?? Optional<TestResult>.Default  
+                        .FirstOrDefault().Value.Value 
+                            ?? Optional<TestResult>.Default  
                 };
             }
             return PipeResult<TestResult>.Default;
