@@ -151,12 +151,17 @@ namespace NSV.ExecutionPipe.xTests
                 .UseStopWatch()
                 .AsSequential()
                 .AddExecutor(executor1)
+                    .SetLabel(nameof(TestExecutor1))
+                    .SetResultHandler((m, r) => { return r; })
                     .SetBreakIfFailed()
                 .AddExecutor(executor2)
                 .AddExecutor(executor3)
                 .Finish();
 
             var result = testPipe.Run();
+            Assert.True(result.Success == ExecutionResult.Failed);
+            Assert.Equal(111, result.Value.Value.Id);
+            Assert.Equal(nameof(TestExecutor1), result.Label);
             Assert.Equal(ExecutionResult.Failed, result.Success);
             Assert.True(testPipe.Elapsed.TotalMilliseconds < 6000/2);
         }

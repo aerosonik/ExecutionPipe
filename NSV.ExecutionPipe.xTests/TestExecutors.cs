@@ -13,7 +13,8 @@ namespace NSV.ExecutionPipe.xTests
     {
         public TestExecutor1()
         {
-            IsAsync = true;
+            //IsAsync = true;
+            IsAsync = false;
         }
         public override PipeResult<TestResult> Execute(TestModel model)
         {
@@ -21,10 +22,11 @@ namespace NSV.ExecutionPipe.xTests
             model.Id += 1;
             var testResult = new TestResult
             {
-                Id = 1,
+                Id = 111,
                 Text = "Test Result 1"
             };
-            return PipeResult<TestResult>.DefaultUnSuccessful.SetValue(testResult);
+            return PipeResult<TestResult>.DefaultUnSuccessful
+                .SetValue(testResult);
         }
 
         public override async Task<PipeResult<TestResult>> ExecuteAsync(TestModel model)

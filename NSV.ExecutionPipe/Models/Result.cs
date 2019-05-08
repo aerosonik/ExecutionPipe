@@ -88,6 +88,76 @@ namespace NSV.ExecutionPipe.Models
                 };
             }
         }
+
+        public PipeResult<T> SetValue(T value)
+        {
+            Value = value;
+            return this;
+        }
+
+        public PipeResult<T> SetBreak(bool isbreak)
+        {
+            Break = isbreak;
+            return this;
+        }
+
+        public PipeResult<T> SetErrors(string[] errors)
+        {
+            if (errors != null)
+                Errors = errors;
+            return this;
+        }
+
+        public PipeResult<T> SetError(string error)
+        {
+            if (!string.IsNullOrWhiteSpace(error))
+                Errors = new string[] { error };
+            return this;
+        }
+
+        public PipeResult<T> SetException(Exception[] exceptions)
+        {
+            if (exceptions != null)
+                Exceptions = exceptions;
+            return this;
+        }
+
+        public PipeResult<T> SetException(Exception exception)
+        {
+            if (exception != null)
+                Exceptions = new Exception[] { exception };
+            return this;
+        }
+
+        public PipeResult<T> SetSuccessful()
+        {
+            Success = ExecutionResult.Successful;
+            return this;
+        }
+
+        public PipeResult<T> SetUnSuccessful()
+        {
+            Success = ExecutionResult.Failed;
+            return this;
+        }
+
+        public PipeResult<T> SetException(ExecutionResult result)
+        {
+            Success = result;
+            return this;
+        }
+
+        public PipeResult<T> SetElapsed(TimeSpan span)
+        {
+            Elapsed = span;
+            return this;
+        }
+
+        public PipeResult<T> SetLabel(string label)
+        {
+            Label = label;
+            return this;
+        }
     }
 
     public enum ExecutionResult
@@ -99,76 +169,6 @@ namespace NSV.ExecutionPipe.Models
 
     public static class ResultExtensions
     {
-        public static PipeResult<T> SetValue<T>(this PipeResult<T> pipeResult, T value)
-        {
-            pipeResult.Value = value;
-            return pipeResult;
-        }
-
-        public static PipeResult<T> SetBreak<T>(this PipeResult<T> pipeResult, bool isbreak)
-        {
-            pipeResult.Break = isbreak;
-            return pipeResult;
-        }
-
-        public static PipeResult<T> SetErrors<T>(this PipeResult<T> pipeResult, string[] errors)
-        {
-            if (errors != null)
-                pipeResult.Errors = errors;
-            return pipeResult;
-        }
-
-        public static PipeResult<T> SetError<T>(this PipeResult<T> pipeResult, string error)
-        {
-            if(!string.IsNullOrWhiteSpace(error))
-                pipeResult.Errors = new string[] { error };
-            return pipeResult;
-        }
-
-        public static PipeResult<T> SetException<T>(this PipeResult<T> pipeResult, Exception[] exceptions)
-        {
-            if(exceptions != null)
-                pipeResult.Exceptions = exceptions;
-            return pipeResult;
-        }
-
-        public static PipeResult<T> SetException<T>(this PipeResult<T> pipeResult, Exception exception)
-        {
-            if(exception != null)
-                pipeResult.Exceptions = new Exception[] { exception };
-            return pipeResult;
-        }
-
-        public static PipeResult<T> SetSuccessful<T>(this PipeResult<T> pipeResult)
-        {
-            pipeResult.Success = ExecutionResult.Successful;
-            return pipeResult;
-        }
-
-        public static PipeResult<T> SetUnSuccessful<T>(this PipeResult<T> pipeResult)
-        {
-            pipeResult.Success = ExecutionResult.Failed;
-            return pipeResult;
-        }
-
-        public static PipeResult<T> SetException<T>(this PipeResult<T> pipeResult, ExecutionResult result)
-        {
-            pipeResult.Success = result;
-            return pipeResult;
-        }
-
-        public static PipeResult<T> SetElapsed<T>(this PipeResult<T> pipeResult, TimeSpan span)
-        {
-            pipeResult.Elapsed = span;
-            return pipeResult;
-        }
-
-        public static PipeResult<T> SetLabel<T>(this PipeResult<T> pipeResult, string label)
-        {
-            pipeResult.Label = label;
-            return pipeResult;
-        }
-
         public static string[] AllErrors<T>(this PipeResult<T>[] results)
         {
             return results
