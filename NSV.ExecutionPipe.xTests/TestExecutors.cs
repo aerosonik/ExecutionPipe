@@ -13,20 +13,21 @@ namespace NSV.ExecutionPipe.xTests
     {
         public TestExecutor1()
         {
-            //IsAsync = true;
-            IsAsync = false;
+            IsAsync = true;
+            //IsAsync = false;
         }
         public override PipeResult<TestResult> Execute(TestModel model)
         {
-            Thread.Sleep(model.Milliseconds);
-            model.Id += 1;
-            var testResult = new TestResult
-            {
-                Id = 111,
-                Text = "Test Result 1"
-            };
-            return PipeResult<TestResult>.DefaultUnSuccessful
-                .SetValue(testResult);
+            throw new NotImplementedException();
+            //Thread.Sleep(model.Milliseconds);
+            //model.Id += 1;
+            //var testResult = new TestResult
+            //{
+            //    Id = 111,
+            //    Text = "Test Result 1"
+            //};
+            //return PipeResult<TestResult>.DefaultUnSuccessful
+            //    .SetValue(testResult);
         }
 
         public override async Task<PipeResult<TestResult>> ExecuteAsync(TestModel model)
@@ -35,10 +36,10 @@ namespace NSV.ExecutionPipe.xTests
             model.Id += 1;
             var testResult = new TestResult
             {
-                Id = 1,
+                Id = 1111,
                 Text = "Test Result 1"
             };
-            return PipeResult<TestResult>.DefaultSuccessful.SetValue(testResult);
+            return PipeResult<TestResult>.DefaultUnSuccessful.SetValue(testResult);
         }
     }
 
@@ -101,6 +102,102 @@ namespace NSV.ExecutionPipe.xTests
                 Text = "Test Result 3"
             };
             return PipeResult<TestResult>.DefaultSuccessful.SetValue(testResult);
+        }
+    }
+
+    public class TestPipeExecutor : PipeExecutor<TestModel, TestResult>
+    {
+        public TestPipeExecutor()
+        {
+            IsAsync = true;
+        }
+        public override PipeResult<TestResult> Execute(TestModel model)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override async Task<PipeResult<TestResult>> ExecuteAsync(TestModel model)
+        {
+            await Task.Delay(model.Milliseconds);
+            model.Id += 1;
+            var testResult = new TestResult
+            {
+                Id = 4,
+                Text = "Test Result 4"
+            };
+            return PipeResult<TestResult>.DefaultSuccessful.SetValue(testResult);
+        }
+    }
+
+    public class TestSubExecutor1 : Executor<TestModel, TestResult>
+    {
+        public TestSubExecutor1()
+        {
+            IsAsync = true;
+        }
+        public override PipeResult<TestResult> Execute(TestModel model)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override async Task<PipeResult<TestResult>> ExecuteAsync(TestModel model)
+        {
+            await Task.Delay(model.Milliseconds);
+            model.Id += 1;
+            var testResult = new TestResult
+            {
+                Id = 11,
+                Text = "Test Result 11"
+            };
+            return PipeResult<TestResult>.DefaultSuccessful.SetValue(testResult);
+        }
+    }
+
+    public class TestSubExecutor2 : Executor<TestModel, TestResult>
+    {
+        public TestSubExecutor2()
+        {
+            IsAsync = false;
+        }
+        public override PipeResult<TestResult> Execute(TestModel model)
+        {
+            Thread.Sleep(model.Milliseconds);
+            model.Id += 1;
+            var testResult = new TestResult
+            {
+                Id = 22,
+                Text = "Test Result 22"
+            };
+            return PipeResult<TestResult>.DefaultSuccessfulBreak.SetValue(testResult);
+        }
+
+        public override Task<PipeResult<TestResult>> ExecuteAsync(TestModel model)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class TestSubExecutor3 : Executor<TestModel, TestResult>
+    {
+        public TestSubExecutor3()
+        {
+            IsAsync = false;
+        }
+        public override PipeResult<TestResult> Execute(TestModel model)
+        {
+            Thread.Sleep(model.Milliseconds);
+            model.Id += 1;
+            var testResult = new TestResult
+            {
+                Id = 33,
+                Text = "Test Result 33"
+            };
+            return PipeResult<TestResult>.DefaultSuccessful.SetValue(testResult);
+        }
+
+        public override Task<PipeResult<TestResult>> ExecuteAsync(TestModel model)
+        {
+            throw new NotImplementedException();
         }
     }
 }
