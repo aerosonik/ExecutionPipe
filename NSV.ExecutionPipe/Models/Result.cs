@@ -81,7 +81,7 @@ namespace NSV.ExecutionPipe.Models
                 return new PipeResult<T>
                 {
                     Value = Optional<T>.Default,
-                    Break = true,
+                    Break = false,
                     Errors = Optional<string[]>.Default,
                     Exceptions = Optional<Exception[]>.Default,
                     Success = ExecutionResult.Failed
@@ -138,12 +138,6 @@ namespace NSV.ExecutionPipe.Models
         public PipeResult<T> SetUnSuccessful()
         {
             Success = ExecutionResult.Failed;
-            return this;
-        }
-
-        public PipeResult<T> SetException(ExecutionResult result)
-        {
-            Success = result;
             return this;
         }
 
