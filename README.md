@@ -12,8 +12,8 @@ Get latest stable version from [NuGet](https://www.nuget.org/packages/NSV.Execut
 
 ## General purpose
 * Use it as part of application architecture.
-* Use it to get more control of your business process implementations, instead of creating set of methods and complex logic of theirs interactions use this library and receive simple and understandble pipe that fully describe your process.
-* Decrease complexity of business logic implementations in case when application has logic layer which consist of many sub layers that eventually to unmanageble code. It's easy to put many parts from differnt layers of one logical chain into one line (but it can be a tree).
+* Use it to get more control of your business process implementations, instead of creating set of methods and complex logic of theirs interactions use this library and receive simple and understandable pipe that fully describes your process.
+* Decrease complexity of business logic implementations in case when application has logic layer which consists of many sub layers that eventually becomes into unmanageable code. It's easy to put many parts from differnt layers of one logical chain into one line (but it can be a tree).
 * It's fully match to S.O.L.I.D., D.R.Y. and K.I.S.S. principles
 * Design Patterns - it's custom implrementation of Strategy pattern
 
