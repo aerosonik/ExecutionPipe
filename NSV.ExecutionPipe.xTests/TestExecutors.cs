@@ -21,7 +21,7 @@ namespace NSV.ExecutionPipe.xTests
             throw new NotImplementedException();
             //Thread.Sleep(model.Milliseconds);
             //model.Id += 1;
-            //var testResult = new TestResult
+            //var testResult = new TestResultB
             //{
             //    Id = 111,
             //    Text = "Test Result 1"
@@ -32,6 +32,8 @@ namespace NSV.ExecutionPipe.xTests
 
         public override async Task<PipeResult<TestResult>> ExecuteAsync(TestModel model)
         {
+            LocalCache.SetObject("key", "first cache object");
+
             await Task.Delay(model.Milliseconds);
             model.Id += 1;
             var testResult = new TestResult
@@ -185,12 +187,13 @@ namespace NSV.ExecutionPipe.xTests
         }
         public override PipeResult<TestResult> Execute(TestModel model)
         {
+            var val = LocalCache.GetObject<string>("key");
             Thread.Sleep(model.Milliseconds);
             model.Id += 1;
             var testResult = new TestResult
             {
                 Id = 33,
-                Text = "Test Result 33"
+                Text = val
             };
             return PipeResult<TestResult>.DefaultSuccessful.SetValue(testResult);
         }

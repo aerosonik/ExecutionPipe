@@ -24,10 +24,10 @@ namespace NSV.ExecutionPipe.xTests
                     Success = results.AnySuccess(),
 
                     Value = results
-                        .Where(x => x.Success != ExecutionResult.Initial)
-                        .Where(x => x.Value.HasValue)
-                        .FirstOrDefault().Value.Value 
-                            ?? Optional<TestResult>.Default  
+                       .Where(x => x.Success != ExecutionResult.Initial)
+                        .FirstOrDefault(x => x.Value.HasValue && x.Value.Value.Id == 33)
+                        .Value.Value
+                            ?? Optional<TestResult>.Default
                 };
             }
             return PipeResult<TestResult>.Default;
@@ -43,14 +43,15 @@ namespace NSV.ExecutionPipe.xTests
             var subExecutor3 = new TestSubExecutor3();
 
             UseStopWatch()
-                .AsSequential()
-                .AddExecutor(subExecutor1)
-                    .SetLabel(nameof(TestSubExecutor1))
-                .AddExecutor(subExecutor2)
-                    .SetLabel(nameof(TestSubExecutor2))
-                .AddExecutor(subExecutor3)
-                    .SetLabel(nameof(TestSubExecutor3))
-                .Finish();
+            .UseParentalCache()
+            .AsSequential()
+            .AddExecutor(subExecutor1)
+                .SetLabel(nameof(TestSubExecutor1))
+            .AddExecutor(subExecutor2)
+                .SetLabel(nameof(TestSubExecutor2))
+            .AddExecutor(subExecutor3)
+                .SetLabel(nameof(TestSubExecutor3))
+            .Finish();
         }
         public override PipeResult<TestResult> CreateResult(
             TestModel model,
@@ -68,8 +69,8 @@ namespace NSV.ExecutionPipe.xTests
 
                     Value = results
                         .Where(x => x.Success != ExecutionResult.Initial)
-                        .Where(x => x.Value.HasValue)
-                        .FirstOrDefault().Value.Value
+                        .FirstOrDefault(x => x.Value.HasValue && x.Value.Value.Id == 33)
+                        .Value.Value
                             ?? Optional<TestResult>.Default
                 };
             }

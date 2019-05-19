@@ -6,9 +6,9 @@ namespace NSV.ExecutionPipe.Pipes
 {
     public interface ILocalCache
     {
-        object GetObject(object key);
+        T GetObject<T>(object key);
 
-        void SetObject(object key, object value);
+        void SetObject<T>(object key, T value);
 
         ILocalCache GetLocalCacheObject();
     }

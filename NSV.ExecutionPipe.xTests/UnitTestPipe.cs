@@ -281,5 +281,39 @@ namespace NSV.ExecutionPipe.xTests
             Assert.True(testPipe.Elapsed.TotalMilliseconds < 9000);
             Assert.True(model.Id == 4);
         }
+
+        [Fact]
+        public void Pipe_Execution_Sequential_SubPipe_Cache()
+        {
+            var executor1 = new TestExecutor1();
+            var executor2 = new TestExecutor2();
+            var executor3 = new TestExecutor3();
+            var pipeExecutor = new TestPipeExecutor();
+            var testSubPipe = new TestSubPipe();
+            var model = new TestModel
+            {
+                Id = 0,
+                Name = "model 1",
+                Milliseconds = 2000
+            };
+            Pipe<TestModel, TestResult> testPipe = new TestPipe();
+            testPipe
+                .UseModel(model)
+                .UseLocalCache()
+                .UseStopWatch()
+                .AsSequential()
+                .AddExecutor(executor1)
+                .AddExecutor(executor2)
+                .AddExecutor(executor3)
+                .AddExecutor(pipeExecutor)
+                    .SetSubPipe(testSubPipe, _ => true)
+                .Finish();
+
+            var result = testPipe.Run();
+            Assert.True(testPipe.Elapsed.TotalMilliseconds > 14000);
+            Assert.True(model.Id == 7);
+            Assert.True(result.Value.Value.Id == 33);
+            Assert.True(result.Value.Value.Text == "first cache object");
+        }
     }
 }

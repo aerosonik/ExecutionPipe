@@ -24,8 +24,9 @@ namespace NSV.ExecutionPipe.Pipes
         private Optional<Stopwatch> _stopWatch = Optional<Stopwatch>.Default;
         private Optional<List<PipeResult<R>>> _results = Optional<List<PipeResult<R>>>.Default;
         private Optional<IDictionary<object, object>> _localCache = Optional<IDictionary<object, object>>.Default;
+        private Optional<ILocalCache> _externalCache = Optional<ILocalCache>.Default;
         private IExecutor<M, R> _current;
-
+        private bool _useParentalCache = false;
         #region IPipe<M, R>
 
         public TimeSpan Elapsed { get; private set; }
@@ -66,6 +67,9 @@ namespace NSV.ExecutionPipe.Pipes
 
         public IPipe<M, R> UseLocalCacheThreadSafe()
         {
+            if (_useParentalCache)
+                return this;
+
             if (_finished)
                 throw new Exception(Const.PipeIsAlreadyFinished);
 
@@ -75,10 +79,19 @@ namespace NSV.ExecutionPipe.Pipes
 
         public IPipe<M, R> UseLocalCache()
         {
+            if (_useParentalCache)
+                return this;
+
             if (_finished)
                 throw new Exception(Const.PipeIsAlreadyFinished);
 
             _localCache = new Dictionary<object, object>();
+            return this;
+        }
+
+        public IPipe<M, R> UseParentalCache()
+        {
+            _useParentalCache = true;
             return this;
         }
 
@@ -134,23 +147,30 @@ namespace NSV.ExecutionPipe.Pipes
 
         #region ILocalCache
 
-        public object GetObject(object key)
+        public T GetObject<T>(object key)
         {
-            if (!_localCache.HasValue)
-                return null;
+            if (_useParentalCache && _externalCache.HasValue)
+                return _externalCache.Value.GetObject<T>(key);
 
-            if (_localCache.Value.TryGetValue(key, out var value))
-                return value;
+            if (_localCache.HasValue && !_useParentalCache)
+                if (_localCache.Value.TryGetValue(key, out var value))
+                    return (T)value;
 
-            return null;
+            return default(T);
         }
 
-        public void SetObject(object key, object value)
+        public void SetObject<T>(object key, T value)
         {
-            if (!_localCache.HasValue)
+            if(_useParentalCache && _externalCache.HasValue)
+            {
+                _externalCache.Value.SetObject(key, value);
                 return;
-
-            _localCache.Value.Add(key, value);
+            }
+            if (_localCache.HasValue && !_useParentalCache)
+            {
+                _localCache.Value.Add(key, value);
+                return;
+            }
         }
 
         public ILocalCache GetLocalCacheObject()
@@ -471,6 +491,9 @@ namespace NSV.ExecutionPipe.Pipes
                 var current = (IPipeExecutor<M, R>)_current;
                 current.Pipe = pipe;
                 current.PipeExecutionCondition = condition;
+
+                if (current.Pipe is Pipe<M, R> pipeInstance)
+                    pipeInstance._externalCache = this;
             }
             return this;
         }
@@ -492,6 +515,15 @@ namespace NSV.ExecutionPipe.Pipes
                 TimeOutMilliseconds = timeOutMilliseconds
             };
             return this;
+        }
+        #endregion
+
+        #region Internal methods
+
+        internal void SetParentalCache(ILocalCache cache)
+        {
+            if (_useParentalCache)
+                _externalCache = new Optional<ILocalCache>(cache);
         }
 
         #endregion
