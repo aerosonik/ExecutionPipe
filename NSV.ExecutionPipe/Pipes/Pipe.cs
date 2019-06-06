@@ -338,6 +338,7 @@ namespace NSV.ExecutionPipe.Pipes
                 var item = _executionQueue.Dequeue();
                 if (item.SkipCondition != null && item.SkipCondition(_model))
                     continue;
+
                 if (item.IsAsync)
                     await ExecuteSubPipeAsync(item, _results.Value);
                 else
@@ -454,10 +455,12 @@ namespace NSV.ExecutionPipe.Pipes
                 pipeItem.PipeExecutionCondition(_model) ||
                 pipeItem.PipeExecutionCondition == null)
                 {
-                    return await pipeItem
+                    var result = await pipeItem
                         .Pipe
                         .UseModel(_model)
                         .RunAsync();
+                    pipeItem.SubPipeResult = result;
+                    return result;
                 }
             }
             return PipeResult<R>.Default;

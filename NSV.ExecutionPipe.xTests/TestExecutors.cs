@@ -120,6 +120,10 @@ namespace NSV.ExecutionPipe.xTests
 
         public override async Task<PipeResult<TestResult>> ExecuteAsync(TestModel model)
         {
+            //TODO: add to readme this feature
+            if (SubPipeResult.Break)
+                return SubPipeResult;
+
             await Task.Delay(model.Milliseconds);
             model.Id += 1;
             var testResult = new TestResult
