@@ -182,11 +182,13 @@ namespace NSV.ExecutionPipe.Pipes
 
         #region ISequentialPipe<M,R> Explicitly
 
-        ISequentialPipe<M, R> ISequentialPipe<M, R>.AddExecutor(IExecutor<M, R> executor)
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.AddExecutor(
+            IExecutor<M, R> executor)
         {
             return AddExecutor(executor);
         }
-        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetSkipIf(Func<M, bool> condition)
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetSkipIf(
+            Func<M, bool> condition)
         {
             return SetSkipIf(condition);
         }
@@ -198,11 +200,14 @@ namespace NSV.ExecutionPipe.Pipes
         {
             return SetAllowBreak(true);
         }
-        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition)
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetSubPipe(
+            IPipe<M, R> pipe, 
+            Func<M, bool> condition)
         {
             return SetSubPipe(pipe, condition);
         }
-        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetResultHandler(Func<M, PipeResult<R>, PipeResult<R>> handler)
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetResultHandler(
+            Func<M, PipeResult<R>, PipeResult<R>> handler)
         {
             _current.CreateResult = handler;
             return this;
@@ -211,7 +216,6 @@ namespace NSV.ExecutionPipe.Pipes
         {
             return SetUseStopWatch();
         }
-
         ISequentialPipe<M, R> ISequentialPipe<M, R>.SetLabel(string label)
         {
             return SetLabel(label);
@@ -222,19 +226,23 @@ namespace NSV.ExecutionPipe.Pipes
         {
             return SetRetryIfFailed(count, timeOutMilliseconds);
         }
+
         #endregion
 
         #region IParallelPipe<M, R> Explicitly
 
-        IParallelPipe<M, R> IParallelPipe<M, R>.AddExecutor(IExecutor<M, R> executor)
+        IParallelPipe<M, R> IParallelPipe<M, R>.AddExecutor(
+            IExecutor<M, R> executor)
         {
             return AddExecutor(executor);
         }
-        IParallelPipe<M, R> IParallelPipe<M, R>.SetSkipIf(Func<M, bool> condition)
+        IParallelPipe<M, R> IParallelPipe<M, R>.SetSkipIf(
+            Func<M, bool> condition)
         {
             return SetSkipIf(condition);
         }
-        IParallelPipe<M, R> IParallelPipe<M, R>.SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition)
+        IParallelPipe<M, R> IParallelPipe<M, R>.SetSubPipe(
+            IPipe<M, R> pipe, Func<M, bool> condition)
         {
             return SetSubPipe(pipe, condition);
         }
@@ -242,8 +250,8 @@ namespace NSV.ExecutionPipe.Pipes
         {
             return SetUseStopWatch();
         }
-
-        IParallelPipe<M, R> IParallelPipe<M, R>.SetLabel(string label)
+        IParallelPipe<M, R> IParallelPipe<M, R>.SetLabel(
+            string label)
         {
             return SetLabel(label);
         }
