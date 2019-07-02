@@ -163,6 +163,12 @@ namespace NSV.ExecutionPipe.Models
 
     public static class ResultExtensions
     {
+        public static PipeResult<T>[] AllUnSuccess<T>(this PipeResult<T>[] results)
+        {
+            return results.Where(x => x.Success == ExecutionResult.Failed)
+                        .ToArray();
+        }
+
         public static string[] AllErrors<T>(this PipeResult<T>[] results)
         {
             return results
