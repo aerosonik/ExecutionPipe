@@ -27,6 +27,9 @@ namespace NSV.ExecutionPipe.Pipes
         private Optional<ILocalCache> _externalCache = Optional<ILocalCache>.Default;
         private IExecutor<M, R> _current;
         private bool _useParentalCache = false;
+        private Optional<Stack<(Optional<Func<M, bool>> calculated, Optional<bool> constant)>> _ifConditionStack 
+                = Optional<Stack<(Optional<Func<M, bool>> calculated, Optional<bool> constant)>>.Default;
+
         #region IPipe<M, R>
 
         public TimeSpan Elapsed { get; private set; }
@@ -187,10 +190,11 @@ namespace NSV.ExecutionPipe.Pipes
         {
             return AddExecutor(executor);
         }
-        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetSkipIf(
-            Func<M, bool> condition)
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.AddExecutor(
+           IExecutor<M, R> executor,
+            bool addif)
         {
-            return SetSkipIf(condition);
+            return AddExecutor(executor, addif);
         }
         ISequentialPipe<M, R> ISequentialPipe<M, R>.SetBreakIfFailed()
         {
@@ -226,7 +230,18 @@ namespace NSV.ExecutionPipe.Pipes
         {
             return SetRetryIfFailed(count, timeOutMilliseconds);
         }
-
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.If(bool condition)
+        {
+            return If(condition);
+        }
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.If(Func<M, bool> condition)
+        {
+            return If(condition);
+        }
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.EndIf()
+        {
+            return EndIf();
+        }
         #endregion
 
         #region IParallelPipe<M, R> Explicitly
@@ -236,10 +251,11 @@ namespace NSV.ExecutionPipe.Pipes
         {
             return AddExecutor(executor);
         }
-        IParallelPipe<M, R> IParallelPipe<M, R>.SetSkipIf(
-            Func<M, bool> condition)
+        IParallelPipe<M, R> IParallelPipe<M, R>.AddExecutor(
+            IExecutor<M, R> executor,
+            bool addif)
         {
-            return SetSkipIf(condition);
+            return AddExecutor(executor, addif);
         }
         IParallelPipe<M, R> IParallelPipe<M, R>.SetSubPipe(
             IPipe<M, R> pipe, Func<M, bool> condition)
@@ -255,7 +271,18 @@ namespace NSV.ExecutionPipe.Pipes
         {
             return SetLabel(label);
         }
-
+        IParallelPipe<M, R> IParallelPipe<M, R>.If(bool condition)
+        {
+            return If(condition);
+        }
+        IParallelPipe<M, R> IParallelPipe<M, R>.If(Func<M, bool> condition)
+        {
+            return If(condition);
+        }
+        IParallelPipe<M, R> IParallelPipe<M, R>.EndIf()
+        {
+            return EndIf();
+        }
 
         #endregion
 
@@ -283,7 +310,7 @@ namespace NSV.ExecutionPipe.Pipes
             while (_executionQueue.Count > 0)
             {
                 var item = _executionQueue.Dequeue();
-                if (item.SkipCondition != null && item.SkipCondition(_model))
+                if (!RunExecutorIfConditions(item, _model))
                     continue;
 
                 if (item.IsAsync)
@@ -344,7 +371,7 @@ namespace NSV.ExecutionPipe.Pipes
             while (_executionQueue.Count > 0)
             {
                 var item = _executionQueue.Dequeue();
-                if (item.SkipCondition != null && item.SkipCondition(_model))
+                if (!RunExecutorIfConditions(item, _model))
                     continue;
 
                 if (item.IsAsync)
@@ -466,23 +493,26 @@ namespace NSV.ExecutionPipe.Pipes
                     var result = await pipeItem
                         .Pipe
                         .UseModel(_model)
-                        .RunAsync();
+                        .RunAsync()
+                        .ConfigureAwait(false);
                     pipeItem.SubPipeResult = result;
                     return result;
                 }
             }
             return PipeResult<R>.Default;
         }
-        private Pipe<M, R> AddExecutor(IExecutor<M, R> executor)
+        private Pipe<M, R> AddExecutor(IExecutor<M, R> executor, bool addif = true)
         {
-            executor.LocalCache = this;
-            _executionQueue.Enqueue(executor);
-            _current = executor;
-            return this;
-        }
-        private Pipe<M, R> SetSkipIf(Func<M, bool> condition)
-        {
-            _current.SkipCondition = condition;
+            if (!addif)
+                return this;
+
+            if (IfConstantConditions())
+            {
+                (executor as Executor<M, R>).ExecuteConditions = GetCalculatedConditions();
+                executor.LocalCache = this;
+                _executionQueue.Enqueue(executor);
+                _current = executor;
+            }
             return this;
         }
         private Pipe<M, R> SetBreakIfFailed(bool value = true)
@@ -527,6 +557,61 @@ namespace NSV.ExecutionPipe.Pipes
             };
             return this;
         }
+        private Pipe<M, R> If(bool condition)
+        {
+            if (!_ifConditionStack.HasValue)
+                _ifConditionStack = new Stack<(Optional<Func<M, bool>> calculated, Optional<bool> constant)>();
+            var ifCondition = (Optional<Func<M, bool>>.Default, condition);
+            _ifConditionStack.Value.Push(ifCondition);
+            return this;
+        }
+        private Pipe<M, R> If(Func<M, bool> condition)
+        {
+            if (condition == null)
+                return this;
+
+            if (!_ifConditionStack.HasValue)
+                _ifConditionStack = new Stack<(Optional<Func<M, bool>> calculated, Optional<bool> constant)>();
+            var ifCondition = (condition, Optional<bool>.Default);
+            _ifConditionStack.Value.Push(ifCondition);
+            return this;
+        }
+        private Pipe<M, R> EndIf()
+        {
+            if (!_ifConditionStack.HasValue || !_ifConditionStack.Value.Any())
+                throw new Exception("Redundant EndIf");
+
+            _ifConditionStack.Value.Pop();
+            return this;
+        }
+        private bool IfConstantConditions()
+        {
+            if (!_ifConditionStack.HasValue)
+                return true;
+
+            return !_ifConditionStack.Value
+                .Where(x => x.constant.HasValue)
+                .Any(x => !x.constant.Value);             
+        }
+        private Optional<Func<M, bool>[]> GetCalculatedConditions()
+        {
+            if (!_ifConditionStack.HasValue || !_ifConditionStack.Value.Any(x => x.calculated.HasValue))
+                return Optional<Func<M, bool>[]>.Default;
+
+
+            return Optional<Func<M, bool>[]>.SetValue(_ifConditionStack.Value
+                        .Where(x => x.calculated.HasValue)
+                        .Select(x => x.calculated.Value)
+                        .ToArray());
+        }
+        private bool RunExecutorIfConditions(IExecutor<M, R> iexecutor, M model)
+        {
+            var executor = (Executor<M, R>)iexecutor;
+            return executor.ExecuteConditions.HasValue
+                ? executor.ExecuteConditions.Value.All(x => x(model))
+                : true;
+        }
+
         #endregion
 
         #region Internal methods

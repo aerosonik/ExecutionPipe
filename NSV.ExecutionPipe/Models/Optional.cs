@@ -41,7 +41,10 @@ namespace NSV.ExecutionPipe
                 return new Optional<T>(default, false);
             }
         }
-
+        public static Optional<T> SetValue(T value)
+        {
+            return new Optional<T>(value);
+        }
         //public override bool Equals(object obj)
         //{
         //    var label = (T)obj;

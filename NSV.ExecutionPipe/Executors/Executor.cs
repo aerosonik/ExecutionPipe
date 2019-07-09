@@ -3,6 +3,7 @@ using NSV.ExecutionPipe.Pipes;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace NSV.ExecutionPipe.Executors
@@ -10,27 +11,16 @@ namespace NSV.ExecutionPipe.Executors
     public abstract class Executor<M, R> : IExecutor<M, R>
     {
         public ILocalCache LocalCache { get; set; }
-
         public bool BreakIfFailed { get; set; }
-
         public bool AllowBreak { get; set; }
-
         public Func<M, PipeResult<R>, PipeResult<R>> CreateResult { get; set; }
-
-        public Func<M, bool> SkipCondition { get; set; }
-
         public bool IsAsync { get; set; } = true;
-
         public string Label { get; set; } = string.Empty;
-
         public Optional<RetryModel> Retry { get; set; } = Optional<RetryModel>.Default;
-
-        public bool UseStopWatch { get; set; }      
-
+        public bool UseStopWatch { get; set; }
+        internal Optional<Func<M,bool>[]> ExecuteConditions { get; set; }
         public abstract PipeResult<R> Execute(M model);
-
         public abstract Task<PipeResult<R>> ExecuteAsync(M model);
-
         public PipeResult<R> Run(M model)
         {
             if (!UseStopWatch)
@@ -42,15 +32,15 @@ namespace NSV.ExecutionPipe.Executors
             sw.Stop();
             return result.SetElapsed(sw.Elapsed).SetLabel(Label);
         }
-
         public async Task<PipeResult<R>> RunAsync(M model)
         {
             if (!UseStopWatch)
-                return (await ExecuteAsync(model)).SetLabel(Label);
+                return (await ExecuteAsync(model).ConfigureAwait(false))
+                    .SetLabel(Label);
 
             var sw = new Stopwatch();
             sw.Start();
-            var result = await ExecuteAsync(model);
+            var result = await ExecuteAsync(model).ConfigureAwait(false);
             sw.Stop();
             return result.SetElapsed(sw.Elapsed).SetLabel(Label);
         }

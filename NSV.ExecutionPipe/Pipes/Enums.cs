@@ -10,4 +10,11 @@ namespace NSV.ExecutionPipe.Pipes
         Sequential,
         Parallel
     }
+
+    public enum CurrentIfCondition
+    {
+        None,
+        Calculated,
+        Constant
+    }
 }
