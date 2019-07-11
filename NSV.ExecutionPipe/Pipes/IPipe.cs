@@ -28,8 +28,10 @@ namespace NSV.ExecutionPipe.Pipes
         ISequentialPipe<M, R> SetBreakIfFailed();
         ISequentialPipe<M, R> SetAllowBreak();
         ISequentialPipe<M, R> SetResultHandler(Func<M, PipeResult<R>, PipeResult<R>> handler);
-        ISequentialPipe<M, R> AddExecutor(IExecutor<M, R> executor);
-        ISequentialPipe<M, R> AddExecutor(IExecutor<M, R> executor, bool addif);
+        ISequentialPipe<M, R> AddExecutor(Executor<M, R> executor);
+        ISequentialPipe<M, R> AddExecutor(Executor<M, R> executor, bool addif);
+        ISequentialPipe<M, R> AddExecutor(Lazy<Executor<M, R>> executor);
+        ISequentialPipe<M, R> AddExecutor(Lazy<Executor<M, R>> executor, bool addif);
         //ISequentialPipe<M, R> SetRunIf(Func<M, bool> condition);
         ISequentialPipe<M, R> SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition);
         ISequentialPipe<M, R> SetUseStopWatch();
@@ -42,8 +44,10 @@ namespace NSV.ExecutionPipe.Pipes
 
     public interface IParallelPipe<M, R>: IBasePipe<M, R>
     {
-        IParallelPipe<M, R> AddExecutor(IExecutor<M, R> executor);
-        IParallelPipe<M, R> AddExecutor(IExecutor<M, R> executor, bool addif);
+        IParallelPipe<M, R> AddExecutor(Executor<M, R> executor);
+        IParallelPipe<M, R> AddExecutor(Executor<M, R> executor, bool addif);
+        IParallelPipe<M, R> AddExecutor(Lazy<Executor<M, R>> executor);
+        IParallelPipe<M, R> AddExecutor(Lazy<Executor<M, R>> executor, bool addif);
         //IParallelPipe<M, R> SetRunIf(Func<M, bool> condition);
         IParallelPipe<M, R> SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition);
         IParallelPipe<M, R> SetUseStopWatch();

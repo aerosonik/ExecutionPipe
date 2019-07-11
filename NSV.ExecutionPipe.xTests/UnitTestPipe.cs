@@ -96,6 +96,7 @@ namespace NSV.ExecutionPipe.xTests
             testPipe
                 .UseModel(model)
                 .UseStopWatch()
+                //.UseLocalCacheThreadSafe()
                 .AsParallel()
                 .AddExecutor(executor1)
                 .AddExecutor(executor2)

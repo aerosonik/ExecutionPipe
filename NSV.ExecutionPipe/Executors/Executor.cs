@@ -11,19 +11,13 @@ namespace NSV.ExecutionPipe.Executors
     public abstract class Executor<M, R> : IExecutor<M, R>
     {
         public ILocalCache LocalCache { get; set; }
-        public bool BreakIfFailed { get; set; }
-        public bool AllowBreak { get; set; }
-        public Func<M, PipeResult<R>, PipeResult<R>> CreateResult { get; set; }
         public bool IsAsync { get; set; } = true;
         public string Label { get; set; } = string.Empty;
-        public Optional<RetryModel> Retry { get; set; } = Optional<RetryModel>.Default;
-        public bool UseStopWatch { get; set; }
-        internal Optional<Func<M,bool>[]> ExecuteConditions { get; set; }
         public abstract PipeResult<R> Execute(M model);
         public abstract Task<PipeResult<R>> ExecuteAsync(M model);
-        public PipeResult<R> Run(M model)
+        internal PipeResult<R> Run(M model, bool useStopWatch)
         {
-            if (!UseStopWatch)
+            if (!useStopWatch)
                 return Execute(model).SetLabel(Label);
 
             var sw = new Stopwatch();
@@ -32,9 +26,9 @@ namespace NSV.ExecutionPipe.Executors
             sw.Stop();
             return result.SetElapsed(sw.Elapsed).SetLabel(Label);
         }
-        public async Task<PipeResult<R>> RunAsync(M model)
+        internal async Task<PipeResult<R>> RunAsync(M model, bool useStopWatch)
         {
-            if (!UseStopWatch)
+            if (!useStopWatch)
                 return (await ExecuteAsync(model).ConfigureAwait(false))
                     .SetLabel(Label);
 
