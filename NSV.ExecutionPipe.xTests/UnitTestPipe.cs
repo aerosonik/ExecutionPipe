@@ -37,7 +37,6 @@ namespace NSV.ExecutionPipe.xTests
             };
             Pipe<TestModel, TestResult> testPipe = new TestPipe();
             testPipe
-                .UseModel(model)
                 .UseStopWatch()
                 .AsSequential()
                 .AddExecutor(executor1)
@@ -45,7 +44,7 @@ namespace NSV.ExecutionPipe.xTests
                 .AddExecutor(executor3)
                 .Finish();
 
-            var result = testPipe.Run();
+            var result = testPipe.Execute(model);
             Assert.Equal(ExecutionResult.Successful, result.Success);
             Assert.True(testPipe.Elapsed.TotalMilliseconds > 6000);
         }
@@ -64,7 +63,6 @@ namespace NSV.ExecutionPipe.xTests
             };
             Pipe<TestModel, TestResult> testPipe = new TestPipe();
             testPipe
-                .UseModel(model)
                 .UseStopWatch()
                 .AsSequential()
                 .AddExecutor(executor1)
@@ -74,7 +72,7 @@ namespace NSV.ExecutionPipe.xTests
                 .EndIf()
                 .Finish();
 
-            var result = testPipe.Run();
+            var result = testPipe.Execute(model);
             Assert.Equal(ExecutionResult.Successful, result.Success);
             Assert.True(testPipe.Elapsed.TotalMilliseconds < 6000);
             Assert.True(model.Id == 3);
@@ -94,7 +92,6 @@ namespace NSV.ExecutionPipe.xTests
             };
             Pipe<TestModel, TestResult> testPipe = new TestPipe();
             testPipe
-                .UseModel(model)
                 .UseStopWatch()
                 //.UseLocalCacheThreadSafe()
                 .AsParallel()
@@ -103,7 +100,7 @@ namespace NSV.ExecutionPipe.xTests
                 .AddExecutor(executor3)
                 .Finish();
 
-            var result = testPipe.Run();
+            var result = testPipe.Execute(model);
             Assert.Equal(ExecutionResult.Successful, result.Success);
             Assert.True(testPipe.Elapsed.TotalMilliseconds < 6000);
         }
@@ -122,7 +119,6 @@ namespace NSV.ExecutionPipe.xTests
             };
             Pipe<TestModel, TestResult> testPipe = new TestPipe();
             testPipe
-                .UseModel(model)
                 .UseStopWatch()
                 .AsSequential()
                 .AddExecutor(executor1)
@@ -131,7 +127,7 @@ namespace NSV.ExecutionPipe.xTests
                 .AddExecutor(executor3)
                 .Finish();
 
-            var result = testPipe.Run();
+            var result = testPipe.Execute(model);
             Assert.Equal(ExecutionResult.Successful, result.Success);
             Assert.True(testPipe.Elapsed.TotalMilliseconds < 6000);
         }
@@ -150,7 +146,6 @@ namespace NSV.ExecutionPipe.xTests
             };
             Pipe<TestModel, TestResult> testPipe = new TestPipe();
             testPipe
-                .UseModel(model)
                 .UseStopWatch()
                 .AsSequential()
                 .AddExecutor(executor1)
@@ -160,7 +155,7 @@ namespace NSV.ExecutionPipe.xTests
                 .EndIf()
                 .Finish();
 
-            var result = testPipe.Run();
+            var result = testPipe.Execute(model);
             Assert.Equal(ExecutionResult.Successful, result.Success);
             Assert.True(testPipe.Elapsed.TotalMilliseconds < 6000);
         }
@@ -179,7 +174,6 @@ namespace NSV.ExecutionPipe.xTests
             };
             Pipe<TestModel, TestResult> testPipe = new TestPipe();
             testPipe
-                .UseModel(model)
                 .UseStopWatch()
                 .AsSequential()
                 .AddExecutor(executor1)
@@ -190,7 +184,7 @@ namespace NSV.ExecutionPipe.xTests
                 .AddExecutor(executor3)
                 .Finish();
 
-            var result = testPipe.Run();
+            var result = testPipe.Execute(model);
             Assert.True(result.Success == ExecutionResult.Failed);
             Assert.Equal(1111, result.Value.Value.Id);
             Assert.Equal(nameof(TestExecutor1), result.Label);
@@ -221,7 +215,7 @@ namespace NSV.ExecutionPipe.xTests
                 .AddExecutor(executor3)
                 .Finish();
 
-            var result = testPipe.UseModel(model).Run();
+            var result = testPipe.Execute(model);
             Assert.Equal(ExecutionResult.Successful, result.Success);
             Assert.True(testPipe.Elapsed.TotalMilliseconds < 6000);
         }
@@ -240,7 +234,6 @@ namespace NSV.ExecutionPipe.xTests
             };
             Pipe<TestModel, TestResult> testPipe = new TestPipe();
             testPipe
-                .UseModel(model)
                 .UseStopWatch()
                 .AsSequential()
                 .AddExecutor(executor1)
@@ -248,7 +241,7 @@ namespace NSV.ExecutionPipe.xTests
                 .AddExecutor(executor3)
                 .Finish();
 
-            var result = testPipe.Run();
+            var result = testPipe.Execute(model);
             Assert.Equal(ExecutionResult.Successful, result.Success);
             Assert.True(model.Id == 3);
         }
@@ -259,7 +252,6 @@ namespace NSV.ExecutionPipe.xTests
             var executor1 = new TestExecutor1();
             var executor2 = new TestExecutor2();
             var executor3 = new TestExecutor3();
-            var pipeExecutor = new TestPipeExecutor();
             var testSubPipe = new TestSubPipe();
             var model = new TestModel
             {
@@ -269,19 +261,17 @@ namespace NSV.ExecutionPipe.xTests
             };
             Pipe<TestModel, TestResult> testPipe = new TestPipe();
             testPipe
-                .UseModel(model)
                 .UseStopWatch()
                 .AsSequential()
                 .AddExecutor(executor1)
                 .AddExecutor(executor2)
                 .AddExecutor(executor3)
-                .AddExecutor(pipeExecutor)
-                    .SetSubPipe(testSubPipe, _ => true)
+                .AddExecutor(testSubPipe)
                 .Finish();
 
-            var result = testPipe.Run();
-            Assert.True(testPipe.Elapsed.TotalMilliseconds > 14000);
-            Assert.True(model.Id == 7);
+            var result = testPipe.Execute(model);
+            Assert.True(testPipe.Elapsed.TotalMilliseconds > 12000);
+            Assert.True(model.Id == 6);
         }
 
         [Fact]
@@ -290,7 +280,7 @@ namespace NSV.ExecutionPipe.xTests
             var executor1 = new TestExecutor1();
             var executor2 = new TestExecutor2();
             var executor3 = new TestExecutor3();
-            var pipeExecutor = new TestPipeExecutor();
+            //var pipeExecutor = new TestPipeExecutor();
             var testSubPipe = new TestSubPipe();
             var model = new TestModel
             {
@@ -300,19 +290,17 @@ namespace NSV.ExecutionPipe.xTests
             };
             Pipe<TestModel, TestResult> testPipe = new TestPipe();
             testPipe
-                .UseModel(model)
                 .UseStopWatch()
                 .AsSequential()
                 .AddExecutor(executor1)
                 .AddExecutor(executor2)
                 .AddExecutor(executor3)
-                .AddExecutor(pipeExecutor)
-                    .SetSubPipe(testSubPipe, _ => false)
+                .AddExecutor(testSubPipe, false)
                 .Finish();
 
-            var result = testPipe.Run();
-            Assert.True(testPipe.Elapsed.TotalMilliseconds < 9000);
-            Assert.True(model.Id == 4);
+            var result = testPipe.Execute(model);
+            Assert.True(testPipe.Elapsed.TotalMilliseconds < 7000);
+            Assert.True(model.Id == 3);
         }
 
         [Fact]
@@ -321,7 +309,6 @@ namespace NSV.ExecutionPipe.xTests
             var executor1 = new TestExecutor1();
             var executor2 = new TestExecutor2();
             var executor3 = new TestExecutor3();
-            var pipeExecutor = new TestPipeExecutor();
             var testSubPipe = new TestSubPipe();
             var model = new TestModel
             {
@@ -331,20 +318,18 @@ namespace NSV.ExecutionPipe.xTests
             };
             Pipe<TestModel, TestResult> testPipe = new TestPipe();
             testPipe
-                .UseModel(model)
                 .UseLocalCache()
                 .UseStopWatch()
                 .AsSequential()
                 .AddExecutor(executor1)
                 .AddExecutor(executor2)
                 .AddExecutor(executor3)
-                .AddExecutor(pipeExecutor)
-                    .SetSubPipe(testSubPipe, _ => true)
+                .AddExecutor(testSubPipe)
                 .Finish();
 
-            var result = testPipe.Run();
-            Assert.True(testPipe.Elapsed.TotalMilliseconds > 14000);
-            Assert.True(model.Id == 7);
+            var result = testPipe.Execute(model);
+            Assert.True(testPipe.Elapsed.TotalMilliseconds > 12000);
+            Assert.True(model.Id == 6);
             Assert.True(result.Value.Value.Id == 33);
             Assert.True(result.Value.Value.Text == "first cache object");
         }

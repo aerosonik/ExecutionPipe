@@ -7,17 +7,14 @@ using System.Threading.Tasks;
 
 namespace NSV.ExecutionPipe.Pipes
 {
-    public interface IPipe<M, R>
+    public interface IPipe<M, R>: IBaseExecutor<M, R>
     {
+        string Label { get; set; }
         TimeSpan Elapsed { get; }
-        PipeResult<R> Run();
-        Task<PipeResult<R>> RunAsync();
         PipeResult<R> CreateResult(M model, PipeResult<R>[] results);
         IParallelPipe<M, R> AsParallel();
         ISequentialPipe<M, R> AsSequential();
-
         IPipe<M, R> UseStopWatch();
-        IPipe<M, R> UseModel(M model = default);
         IPipe<M, R> UseLocalCacheThreadSafe();
         IPipe<M, R> UseLocalCache();
         IPipe<M, R> UseParentalCache();
@@ -32,8 +29,11 @@ namespace NSV.ExecutionPipe.Pipes
         ISequentialPipe<M, R> AddExecutor(Executor<M, R> executor, bool addif);
         ISequentialPipe<M, R> AddExecutor(Lazy<Executor<M, R>> executor);
         ISequentialPipe<M, R> AddExecutor(Lazy<Executor<M, R>> executor, bool addif);
-        //ISequentialPipe<M, R> SetRunIf(Func<M, bool> condition);
-        ISequentialPipe<M, R> SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition);
+        ISequentialPipe<M, R> AddExecutor(Pipe<M, R> executor);
+        ISequentialPipe<M, R> AddExecutor(Pipe<M, R> executor, bool addif);
+        ISequentialPipe<M, R> AddExecutor(Lazy<Pipe<M, R>> executor);
+        ISequentialPipe<M, R> AddExecutor(Lazy<Pipe<M, R>> executor, bool addif);
+
         ISequentialPipe<M, R> SetUseStopWatch();
         ISequentialPipe<M, R> SetLabel(string label);
         ISequentialPipe<M, R> SetRetryIfFailed(int count, int timeOutMilliseconds);
@@ -48,8 +48,10 @@ namespace NSV.ExecutionPipe.Pipes
         IParallelPipe<M, R> AddExecutor(Executor<M, R> executor, bool addif);
         IParallelPipe<M, R> AddExecutor(Lazy<Executor<M, R>> executor);
         IParallelPipe<M, R> AddExecutor(Lazy<Executor<M, R>> executor, bool addif);
-        //IParallelPipe<M, R> SetRunIf(Func<M, bool> condition);
-        IParallelPipe<M, R> SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition);
+        IParallelPipe<M, R> AddExecutor(Pipe<M, R> executor);
+        IParallelPipe<M, R> AddExecutor(Pipe<M, R> executor, bool addif);
+        IParallelPipe<M, R> AddExecutor(Lazy<Pipe<M, R>> executor);
+        IParallelPipe<M, R> AddExecutor(Lazy<Pipe<M, R>> executor, bool addif);
         IParallelPipe<M, R> SetUseStopWatch();
         IParallelPipe<M, R> SetLabel(string label);
         IParallelPipe<M, R> If(bool condition);

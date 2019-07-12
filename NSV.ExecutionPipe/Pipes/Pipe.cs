@@ -35,8 +35,49 @@ namespace NSV.ExecutionPipe.Pipes
 
         #endregion
 
-        #region IPipe<M, R>
+        #region IBaseExecutor<M,R>
+        public string Label { get; set; }
+        public bool IsAsync { get; set; }
+        public IBaseExecutor<M, R> UseCache(ILocalCache cache)
+        {
+            if (_useParentalCache)
+                _externalCache = new Optional<ILocalCache>(cache);
+            return this;
+        }
+        public PipeResult<R> Execute(M model)
+        {
+            SetModel(model);
+            if (_type == PipeExecutionType.None)
+                throw new Exception(Const.PipeNotConfigured);
 
+            if (!_stopWatch.HasValue)
+                return RunPipe();
+
+            _stopWatch.Value.Start();
+            var result = RunPipe();
+            _stopWatch.Value.Stop();
+            Elapsed = _stopWatch.Value.Elapsed;
+            return result;
+        }
+
+        public async Task<PipeResult<R>> ExecuteAsync(M model)
+        {
+            SetModel(model);
+            if (_type == PipeExecutionType.None)
+                throw new Exception(Const.PipeNotConfigured);
+
+            if (!_stopWatch.HasValue)
+                return await RunPipeAsync();
+
+            _stopWatch.Value.Start();
+            var result = await RunPipeAsync();
+            _stopWatch.Value.Stop();
+            Elapsed = _stopWatch.Value.Elapsed;
+            return result;
+        }
+        #endregion
+
+        #region IPipe<M, R>
         public TimeSpan Elapsed { get; private set; }
 
         public IParallelPipe<M, R> AsParallel()
@@ -61,15 +102,6 @@ namespace NSV.ExecutionPipe.Pipes
         public IPipe<M, R> UseStopWatch()
         {
             _stopWatch = new Stopwatch();
-            return this;
-        }
-
-        public IPipe<M, R> UseModel(M model = default)
-        {
-            if (_model.HasValue)
-                return this;
-
-            _model = model;
             return this;
         }
 
@@ -106,37 +138,6 @@ namespace NSV.ExecutionPipe.Pipes
         public abstract PipeResult<R> CreateResult(
             M model,
             PipeResult<R>[] results);
-
-        public PipeResult<R> Run()
-        {
-
-            if (_type == PipeExecutionType.None)
-                throw new Exception(Const.PipeNotConfigured);
-
-            if (!_stopWatch.HasValue)
-                return RunPipe();
-
-            _stopWatch.Value.Start();
-            var result = RunPipe();
-            _stopWatch.Value.Stop();
-            Elapsed = _stopWatch.Value.Elapsed;
-            return result;
-        }
-
-        public async Task<PipeResult<R>> RunAsync()
-        {
-            if (_type == PipeExecutionType.None)
-                throw new Exception(Const.PipeNotConfigured);
-
-            if (!_stopWatch.HasValue)
-                return await RunPipeAsync();
-
-            _stopWatch.Value.Start();
-            var result = await RunPipeAsync();
-            _stopWatch.Value.Stop();
-            Elapsed = _stopWatch.Value.Elapsed;
-            return result;
-        }
 
         #endregion
 
@@ -212,6 +213,28 @@ namespace NSV.ExecutionPipe.Pipes
         {
             return AddExecutor(executor, addif);
         }
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.AddExecutor(
+           Pipe<M, R> pipe)
+        {
+            return AddExecutor(pipe);
+        }
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.AddExecutor(
+            Pipe<M, R> pipe,
+            bool addif)
+        {
+            return AddExecutor(pipe, addif);
+        }
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.AddExecutor(
+            Lazy<Pipe<M, R>> pipe)
+        {
+            return AddExecutor(pipe);
+        }
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.AddExecutor(
+            Lazy<Pipe<M, R>> pipe,
+            bool addif)
+        {
+            return AddExecutor(pipe, addif);
+        }
         ISequentialPipe<M, R> ISequentialPipe<M, R>.SetBreakIfFailed()
         {
             return SetBreakIfFailed(true);
@@ -220,12 +243,7 @@ namespace NSV.ExecutionPipe.Pipes
         {
             return SetAllowBreak(true);
         }
-        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetSubPipe(
-            IPipe<M, R> pipe, 
-            Func<M, bool> condition)
-        {
-            return SetSubPipe(pipe, condition);
-        }
+
         ISequentialPipe<M, R> ISequentialPipe<M, R>.SetResultHandler(
             Func<M, PipeResult<R>, PipeResult<R>> handler)
         {
@@ -284,11 +302,24 @@ namespace NSV.ExecutionPipe.Pipes
         {
             return AddExecutor(executor, addif);
         }
-        IParallelPipe<M, R> IParallelPipe<M, R>.SetSubPipe(
-            IPipe<M, R> pipe, Func<M, bool> condition)
+
+        IParallelPipe<M, R> IParallelPipe<M, R>.AddExecutor(Pipe<M, R> pipe)
         {
-            return SetSubPipe(pipe, condition);
+            return AddExecutor(pipe);
         }
+        IParallelPipe<M, R> IParallelPipe<M, R>.AddExecutor(Pipe<M, R> pipe, bool addif)
+        {
+            return AddExecutor(pipe, addif);
+        }
+        IParallelPipe<M, R> IParallelPipe<M, R>.AddExecutor(Lazy<Pipe<M, R>> pipe)
+        {
+            return AddExecutor(pipe);
+        }
+        IParallelPipe<M, R> IParallelPipe<M, R>.AddExecutor(Lazy<Pipe<M, R>> pipe, bool addif)
+        {
+            return AddExecutor(pipe, addif);
+        }
+
         IParallelPipe<M, R> IParallelPipe<M, R>.SetUseStopWatch()
         {
             return SetUseStopWatch();
@@ -340,10 +371,10 @@ namespace NSV.ExecutionPipe.Pipes
                 if (!RunExecutorIfConditions(container, _model))
                     continue;
 
-                if (container.IsAsync)
-                    AsyncHelper.RunSync(ExecuteSubPipeAsync(container, _results.Value));
-                else
-                    ExecuteSubPipe(container, _results.Value);
+                //if (container.IsAsync)
+                //    AsyncHelper.RunSync(ExecuteSubPipeAsync(container, _results.Value));
+                //else
+                //    ExecuteSubPipe(container, _results.Value);
 
                 var result = RunHelper(container);
 
@@ -359,8 +390,8 @@ namespace NSV.ExecutionPipe.Pipes
                 _results.Value.Add(result);
                 if (Break(container, result))
                 {
-                    if (container.CreateResult != null)
-                        return container.CreateResult(_model, result);
+                    if (container.CreateResult.HasValue)
+                        return container.CreateResult.Value(_model, result);
                     break;
                 }
             }
@@ -373,17 +404,9 @@ namespace NSV.ExecutionPipe.Pipes
         private PipeResult<R> RunHelper(ExecutorContainer<M, R> container)
         {
             if (container.IsAsync)
-                return AsyncHelper.RunSync(container
-                    .Executor.RunAsync(_model, container.UseStopWatch));
+                return AsyncHelper.RunSync(container.RunAsync(_model));
             else
-                return container.Executor.Run(_model, container.UseStopWatch);
-        }
-        private PipeResult<R> RunSubPipeHelper(ExecutorContainer<M, R> container)
-        {
-            if (container.Executor.IsAsync)
-                return AsyncHelper.RunSync(RunSubPipeAsync(container));
-            else
-                return RunSubPipe(container);
+                return container.Run(_model);
         }
 
         private async Task<PipeResult<R>> RunPipeAsync()
@@ -402,22 +425,17 @@ namespace NSV.ExecutionPipe.Pipes
                 if (!RunExecutorIfConditions(container, _model))
                     continue;
 
-                if (container.IsAsync)
-                    await ExecuteSubPipeAsync(container, _results.Value);
-                else
-                    ExecuteSubPipe(container, _results.Value);
-
                 var result = container.IsAsync
-                    ? await container.Executor.RunAsync(_model, container.UseStopWatch)
-                    : container.Executor.Run(_model, container.UseStopWatch);
+                    ? await container.RunAsync(_model)
+                    : container.Run(_model);
 
                 if (container.Retry.HasValue && result.Success == ExecutionResult.Failed)
                 {
                     for (int i = 0; i < container.Retry.Value.Count; i++)
                     {
-                        result = container.Executor.IsAsync
-                            ? await container.Executor.RunAsync(_model, container.UseStopWatch)
-                            : container.Executor.Run(_model, container.UseStopWatch);
+                        result = container.IsAsync
+                            ? await container.RunAsync(_model)
+                            : container.Run(_model);
                         if (result.Success == ExecutionResult.Successful)
                             break;
                     }
@@ -427,7 +445,7 @@ namespace NSV.ExecutionPipe.Pipes
                 if (Break(container, result))
                 {
                     if (container.CreateResult != null)
-                        return container.CreateResult(_model, result);
+                        return container.CreateResult.Value(_model, result);
                     break;
                 }
             }
@@ -444,7 +462,7 @@ namespace NSV.ExecutionPipe.Pipes
                 .AsParallel()
                 .Where(x => RunExecutorIfConditions(x, _model))
                 .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
-                .SelectMany(x => RunExecutorForParallel(x))
+                .Select(x => RunExecutorForParallel(x))
                 .ToArray();
         }
 
@@ -453,37 +471,32 @@ namespace NSV.ExecutionPipe.Pipes
             var allInvocations = _executionQueue
                 .Where(x => RunExecutorIfConditions(x, _model));
             var asyncInvocations = allInvocations
-                .Where(x => x.Executor.IsAsync)
+                .Where(x => x.IsAsync)
                 .Select(x => RunExecutorForParallelTaskAsync(x))
                 .Concat(allInvocations
-                    .Where(x => !x.Executor.IsAsync)
+                    .Where(x => !x.IsAsync)
                     .Select(x => RunExecutorForParallelTask(x)));
 
-            var results = await Task.WhenAll(asyncInvocations);
-            return results.SelectMany(x => x).ToArray();
+            return await Task.WhenAll(asyncInvocations);
         }
 
-        private async Task<PipeResult<R>[]> RunExecutorForParallelTaskAsync(ExecutorContainer<M, R> container)
+        private async Task<PipeResult<R>> RunExecutorForParallelTaskAsync(ExecutorContainer<M, R> container)
         {
-            var subPipeResult = await RunSubPipeAsync(container);
-            var result = await container.Executor
-                .RunAsync(_model, container.UseStopWatch);
+            //var subPipeResult = await RunSubPipeAsync(container);
+            var result = await container.RunAsync(_model);
             if (container.Retry.HasValue && result.Success == ExecutionResult.Failed)
             {
                 for (int i = 0; i < container.Retry.Value.Count; i++)
                 {
-                    result = await container.Executor
-                        .RunAsync(_model, container.UseStopWatch);
+                    result = await container.RunAsync(_model);
                     if (result.Success == ExecutionResult.Successful)
                         break;
                 }
             }
-            return subPipeResult.Success == ExecutionResult.Initial
-                    ? new[] { result }
-                    : new[] { result, subPipeResult };
+            return result;
         }
 
-        private Task<PipeResult<R>[]> RunExecutorForParallelTask(ExecutorContainer<M, R> container)
+        private Task<PipeResult<R>> RunExecutorForParallelTask(ExecutorContainer<M, R> container)
         {
             return Task.Run(() =>
             {
@@ -491,9 +504,9 @@ namespace NSV.ExecutionPipe.Pipes
             });
         }
 
-        private PipeResult<R>[] RunExecutorForParallel(ExecutorContainer<M, R> container)
+        private PipeResult<R> RunExecutorForParallel(ExecutorContainer<M, R> container)
         {
-            var subPipeResult = RunSubPipeHelper(container);
+            //var subPipeResult = RunSubPipeHelper(container);
             var result = RunHelper(container);
             if (container.Retry.HasValue && result.Success == ExecutionResult.Failed)
             {
@@ -504,64 +517,9 @@ namespace NSV.ExecutionPipe.Pipes
                         break;
                 }
             }
-            return subPipeResult.Success == ExecutionResult.Initial
-                ? new[] { result }
-                : new[] { result, subPipeResult };
+            return result;
         }
 
-        private void ExecuteSubPipe(
-            ExecutorContainer<M, R> container,
-            List<PipeResult<R>> results)
-        {
-            var subPipeResult = RunSubPipe(container);
-            if (subPipeResult.Success != ExecutionResult.Initial)
-                results.Add(subPipeResult);
-        }
-
-        private async Task ExecuteSubPipeAsync(
-            ExecutorContainer<M, R> container,
-            List<PipeResult<R>> results)
-        {
-            var subPipeResult = await RunSubPipeAsync(container);
-            if (subPipeResult.Success != ExecutionResult.Initial)
-                results.Add(subPipeResult);
-        }
-
-        private PipeResult<R> RunSubPipe(ExecutorContainer<M, R> container)
-        {
-            if (container.Executor is IPipeExecutor<M, R> pipeItem)
-            {
-                if (pipeItem.PipeExecutionCondition != null &&
-                pipeItem.PipeExecutionCondition(_model) ||
-                pipeItem.PipeExecutionCondition == null)
-                {
-                    return pipeItem
-                        .Pipe
-                        .UseModel(_model)
-                        .Run();
-                }
-            }
-            return PipeResult<R>.Default;
-        }
-        private async Task<PipeResult<R>> RunSubPipeAsync(ExecutorContainer<M, R> container)
-        {
-            if (container.Executor is IPipeExecutor<M, R> pipeItem)
-            {
-                if (pipeItem.PipeExecutionCondition != null &&
-                pipeItem.PipeExecutionCondition(_model) ||
-                pipeItem.PipeExecutionCondition == null)
-                {
-                    var result = await pipeItem
-                        .Pipe
-                        .UseModel(_model)
-                        .RunAsync()
-                        .ConfigureAwait(false);
-                    pipeItem.SubPipeResult = result;
-                    return result;
-                }
-            }
-            return PipeResult<R>.Default;
-        }
         private Pipe<M, R> AddExecutor(Executor<M, R> executor, bool addif = true)
         {
             if (!addif)
@@ -592,6 +550,36 @@ namespace NSV.ExecutionPipe.Pipes
             }
             return this;
         }
+        private Pipe<M, R> AddExecutor(Pipe<M, R> executor, bool addif = true)
+        {
+            if (!addif)
+                return this;
+
+            if (IfConstantConditions())
+            {
+                var container = new ExecutorContainer<M, R>(executor);
+                container.LocalCache = this;
+                container.ExecuteConditions = GetCalculatedConditions();
+                _executionQueue.Enqueue(container);
+                _current = container;
+            }
+            return this;
+        }
+        private Pipe<M, R> AddExecutor(Lazy<Pipe<M, R>> executor, bool addif = true)
+        {
+            if (!addif)
+                return this;
+
+            if (IfConstantConditions())
+            {
+                var container = new ExecutorContainer<M, R>(executor);
+                container.LocalCache = this;
+                container.ExecuteConditions = GetCalculatedConditions();
+                _executionQueue.Enqueue(container);
+                _current = container;
+            }
+            return this;
+        }
 
         private Pipe<M, R> SetBreakIfFailed(bool value = true)
         {
@@ -603,19 +591,7 @@ namespace NSV.ExecutionPipe.Pipes
             _current.AllowBreak = value;
             return this;
         }
-        private Pipe<M, R> SetSubPipe(IPipe<M, R> pipe, Func<M, bool> condition = null)
-        {
-            if (_current.Executor is IPipeExecutor<M, R> && pipe != null)
-            {
-                var current = (IPipeExecutor<M, R>)_current.Executor;
-                current.Pipe = pipe;
-                current.PipeExecutionCondition = condition;
 
-                if (current.Pipe is Pipe<M, R> pipeInstance)
-                    pipeInstance._externalCache = this;
-            }
-            return this;
-        }
         private Pipe<M, R> SetUseStopWatch()
         {
             _current.UseStopWatch = true;
@@ -689,17 +665,14 @@ namespace NSV.ExecutionPipe.Pipes
                 : true;
         }
 
-        #endregion
-
-        #region Internal methods
-
-        internal void SetParentalCache(ILocalCache cache)
+        private void SetModel(M model = default)
         {
-            if (_useParentalCache)
-                _externalCache = new Optional<ILocalCache>(cache);
+            if (_model.HasValue)
+                return;
+
+            _model = model;
         }
 
         #endregion
-
     }
 }

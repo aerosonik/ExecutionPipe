@@ -8,14 +8,8 @@ using System.Threading.Tasks;
 
 namespace NSV.ExecutionPipe.Executors
 {
-    public interface IExecutor<M,R>
+    public interface IExecutor<M,R> : IBaseExecutor<M, R>
     {
         ILocalCache LocalCache { get; set; }
-
-        bool IsAsync { get; set; }
-
-        PipeResult<R> Execute(M model);
-
-        Task<PipeResult<R>> ExecuteAsync(M model);
     }
 }
