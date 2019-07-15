@@ -21,12 +21,12 @@ namespace NSV.ExecutionPipe
             throw new NotImplementedException();
         }
 
-        public ISyncParallelExecutorBuilder<M, R> Add(Lazy<ISyncExecutor<M, R>> executor)
+        public ISyncParallelExecutorBuilder<M, R> Add(Func<ISyncExecutor<M, R>> executor)
         {
             throw new NotImplementedException();
         }
 
-        public ISyncParallelExecutorBuilder<M, R> Add(Lazy<ISyncExecutor<M, R>> executor, bool addif)
+        public ISyncParallelExecutorBuilder<M, R> Add(Func<ISyncExecutor<M, R>> executor, bool addif)
         {
             throw new NotImplementedException();
         }
@@ -105,12 +105,12 @@ namespace NSV.ExecutionPipe
             throw new NotImplementedException();
         }
 
-        public ISyncSequentialExecutorBuilder<M, R> Add(Lazy<ISyncExecutor<M, R>> executor)
+        public ISyncSequentialExecutorBuilder<M, R> Add(Func<ISyncExecutor<M, R>> executor)
         {
             throw new NotImplementedException();
         }
 
-        public ISyncSequentialExecutorBuilder<M, R> Add(Lazy<ISyncExecutor<M, R>> executor, bool addif)
+        public ISyncSequentialExecutorBuilder<M, R> Add(Func<ISyncExecutor<M, R>> executor, bool addif)
         {
             throw new NotImplementedException();
         }
@@ -210,12 +210,12 @@ namespace NSV.ExecutionPipe
             throw new NotImplementedException();
         }
 
-        public IAsyncParallelExecutorBuilder<M, R> Add(Lazy<IAsyncExecutor<M, R>> executor)
+        public IAsyncParallelExecutorBuilder<M, R> Add(Func<IAsyncExecutor<M, R>> executor)
         {
             throw new NotImplementedException();
         }
 
-        public IAsyncParallelExecutorBuilder<M, R> Add(Lazy<IAsyncExecutor<M, R>> executor, bool addif)
+        public IAsyncParallelExecutorBuilder<M, R> Add(Func<IAsyncExecutor<M, R>> executor, bool addif)
         {
             throw new NotImplementedException();
         }
@@ -295,12 +295,12 @@ namespace NSV.ExecutionPipe
             throw new NotImplementedException();
         }
 
-        public IAsyncSequentialExecutorBuilder<M, R> Add(Lazy<IAsyncExecutor<M, R>> executor)
+        public IAsyncSequentialExecutorBuilder<M, R> Add(Func<IAsyncExecutor<M, R>> executor)
         {
             throw new NotImplementedException();
         }
 
-        public IAsyncSequentialExecutorBuilder<M, R> Add(Lazy<IAsyncExecutor<M, R>> executor, bool addif)
+        public IAsyncSequentialExecutorBuilder<M, R> Add(Func<IAsyncExecutor<M, R>> executor, bool addif)
         {
             throw new NotImplementedException();
         }

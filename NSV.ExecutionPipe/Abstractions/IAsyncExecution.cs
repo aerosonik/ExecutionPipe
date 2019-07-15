@@ -25,8 +25,8 @@ namespace NSV.ExecutionPipe
         ISyncSequentialPipe<M, R> UseLocalCache();
         ISyncSequentialExecutorBuilder<M, R> Add(ISyncExecutor<M, R> executor);
         ISyncSequentialExecutorBuilder<M, R> Add(ISyncExecutor<M, R> executor, bool addif);
-        ISyncSequentialExecutorBuilder<M, R> Add(Lazy<ISyncExecutor<M, R>> executor);
-        ISyncSequentialExecutorBuilder<M, R> Add(Lazy<ISyncExecutor<M, R>> executor, bool addif);
+        ISyncSequentialExecutorBuilder<M, R> Add(Func<ISyncExecutor<M, R>> executor);
+        ISyncSequentialExecutorBuilder<M, R> Add(Func<ISyncExecutor<M, R>> executor, bool addif);
         ISyncSequentialPipe<M, R> If(bool condition);
         ISyncSequentialPipe<M, R> If(Func<M, bool> condition);
         ISyncSequentialPipe<M, R> EndIf();
@@ -53,8 +53,8 @@ namespace NSV.ExecutionPipe
         IAsyncSequentialPipe<M, R> UseLocalCache();
         IAsyncSequentialExecutorBuilder<M, R> Add(IAsyncExecutor<M, R> executor);
         IAsyncSequentialExecutorBuilder<M, R> Add(IAsyncExecutor<M, R> executor, bool addif);
-        IAsyncSequentialExecutorBuilder<M, R> Add(Lazy<IAsyncExecutor<M, R>> executor);
-        IAsyncSequentialExecutorBuilder<M, R> Add(Lazy<IAsyncExecutor<M, R>> executor, bool addif);
+        IAsyncSequentialExecutorBuilder<M, R> Add(Func<IAsyncExecutor<M, R>> executor);
+        IAsyncSequentialExecutorBuilder<M, R> Add(Func<IAsyncExecutor<M, R>> executor, bool addif);
         IAsyncSequentialPipe<M, R> If(bool condition);
         IAsyncSequentialPipe<M, R> If(Func<M, bool> condition);
         IAsyncSequentialPipe<M, R> EndIf();
@@ -81,8 +81,8 @@ namespace NSV.ExecutionPipe
         ISyncParallelPipe<M, R> UseLocalCacheThreadSafe();
         ISyncParallelExecutorBuilder<M, R> Add(ISyncExecutor<M, R> executor);
         ISyncParallelExecutorBuilder<M, R> Add(ISyncExecutor<M, R> executor, bool addif);
-        ISyncParallelExecutorBuilder<M, R> Add(Lazy<ISyncExecutor<M, R>> executor);
-        ISyncParallelExecutorBuilder<M, R> Add(Lazy<ISyncExecutor<M, R>> executor, bool addif);
+        ISyncParallelExecutorBuilder<M, R> Add(Func<ISyncExecutor<M, R>> executor);
+        ISyncParallelExecutorBuilder<M, R> Add(Func<ISyncExecutor<M, R>> executor, bool addif);
         ISyncParallelPipe<M, R> If(bool condition);
         ISyncParallelPipe<M, R> If(Func<M, bool> condition);
         ISyncParallelPipe<M, R> EndIf();
@@ -105,8 +105,8 @@ namespace NSV.ExecutionPipe
         IAsyncParallelPipe<M, R> UseLocalCacheThreadSafe();
         IAsyncParallelExecutorBuilder<M, R> Add(IAsyncExecutor<M, R> executor);
         IAsyncParallelExecutorBuilder<M, R> Add(IAsyncExecutor<M, R> executor, bool addif);
-        IAsyncParallelExecutorBuilder<M, R> Add(Lazy<IAsyncExecutor<M, R>> executor);
-        IAsyncParallelExecutorBuilder<M, R> Add(Lazy<IAsyncExecutor<M, R>> executor, bool addif);
+        IAsyncParallelExecutorBuilder<M, R> Add(Func<IAsyncExecutor<M, R>> executor);
+        IAsyncParallelExecutorBuilder<M, R> Add(Func<IAsyncExecutor<M, R>> executor, bool addif);
         IAsyncParallelPipe<M, R> If(bool condition);
         IAsyncParallelPipe<M, R> If(Func<M, bool> condition);
         IAsyncParallelPipe<M, R> EndIf();
