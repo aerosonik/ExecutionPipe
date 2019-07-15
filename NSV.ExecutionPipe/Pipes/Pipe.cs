@@ -192,48 +192,26 @@ namespace NSV.ExecutionPipe.Pipes
         #region ISequentialPipe<M,R> Explicitly
 
         ISequentialPipe<M, R> ISequentialPipe<M, R>.AddExecutor(
-            Executor<M, R> executor)
+            IBaseExecutor<M, R> executor)
         {
             return AddExecutor(executor);
         }
         ISequentialPipe<M, R> ISequentialPipe<M, R>.AddExecutor(
-            Executor<M, R> executor,
+            IBaseExecutor<M, R> executor,
             bool addif)
         {
             return AddExecutor(executor, addif);
         }
         ISequentialPipe<M, R> ISequentialPipe<M, R>.AddExecutor(
-            Lazy<Executor<M, R>> executor)
+            Func<IBaseExecutor<M, R>> executor)
         {
             return AddExecutor(executor);
         }
         ISequentialPipe<M, R> ISequentialPipe<M, R>.AddExecutor(
-            Lazy<Executor<M, R>> executor,
+            Func<IBaseExecutor<M, R>> executor,
             bool addif)
         {
             return AddExecutor(executor, addif);
-        }
-        ISequentialPipe<M, R> ISequentialPipe<M, R>.AddExecutor(
-           Pipe<M, R> pipe)
-        {
-            return AddExecutor(pipe);
-        }
-        ISequentialPipe<M, R> ISequentialPipe<M, R>.AddExecutor(
-            Pipe<M, R> pipe,
-            bool addif)
-        {
-            return AddExecutor(pipe, addif);
-        }
-        ISequentialPipe<M, R> ISequentialPipe<M, R>.AddExecutor(
-            Lazy<Pipe<M, R>> pipe)
-        {
-            return AddExecutor(pipe);
-        }
-        ISequentialPipe<M, R> ISequentialPipe<M, R>.AddExecutor(
-            Lazy<Pipe<M, R>> pipe,
-            bool addif)
-        {
-            return AddExecutor(pipe, addif);
         }
         ISequentialPipe<M, R> ISequentialPipe<M, R>.SetBreakIfFailed()
         {
@@ -281,43 +259,26 @@ namespace NSV.ExecutionPipe.Pipes
         #region IParallelPipe<M, R> Explicitly
 
         IParallelPipe<M, R> IParallelPipe<M, R>.AddExecutor(
-            Executor<M, R> executor)
+            IBaseExecutor<M, R> executor)
         {
             return AddExecutor(executor);
         }
         IParallelPipe<M, R> IParallelPipe<M, R>.AddExecutor(
-            Executor<M, R> executor,
+            IBaseExecutor<M, R> executor,
             bool addif)
         {
             return AddExecutor(executor, addif);
         }
         IParallelPipe<M, R> IParallelPipe<M, R>.AddExecutor(
-           Lazy<Executor<M, R>> executor)
+           Func<IBaseExecutor<M, R>> executor)
         {
             return AddExecutor(executor);
         }
         IParallelPipe<M, R> IParallelPipe<M, R>.AddExecutor(
-            Lazy<Executor<M, R>> executor,
+            Func<IBaseExecutor<M, R>> executor,
             bool addif)
         {
             return AddExecutor(executor, addif);
-        }
-
-        IParallelPipe<M, R> IParallelPipe<M, R>.AddExecutor(Pipe<M, R> pipe)
-        {
-            return AddExecutor(pipe);
-        }
-        IParallelPipe<M, R> IParallelPipe<M, R>.AddExecutor(Pipe<M, R> pipe, bool addif)
-        {
-            return AddExecutor(pipe, addif);
-        }
-        IParallelPipe<M, R> IParallelPipe<M, R>.AddExecutor(Lazy<Pipe<M, R>> pipe)
-        {
-            return AddExecutor(pipe);
-        }
-        IParallelPipe<M, R> IParallelPipe<M, R>.AddExecutor(Lazy<Pipe<M, R>> pipe, bool addif)
-        {
-            return AddExecutor(pipe, addif);
         }
 
         IParallelPipe<M, R> IParallelPipe<M, R>.SetUseStopWatch()
@@ -520,7 +481,7 @@ namespace NSV.ExecutionPipe.Pipes
             return result;
         }
 
-        private Pipe<M, R> AddExecutor(Executor<M, R> executor, bool addif = true)
+        private Pipe<M, R> AddExecutor(IBaseExecutor<M, R> executor, bool addif = true)
         {
             if (!addif)
                 return this;
@@ -535,7 +496,7 @@ namespace NSV.ExecutionPipe.Pipes
             }
             return this;
         }
-        private Pipe<M, R> AddExecutor(Lazy<Executor<M, R>> executor, bool addif = true)
+        private Pipe<M, R> AddExecutor(Func<IBaseExecutor<M, R>> executor, bool addif = true)
         {
             if (!addif)
                 return this;
@@ -550,37 +511,6 @@ namespace NSV.ExecutionPipe.Pipes
             }
             return this;
         }
-        private Pipe<M, R> AddExecutor(Pipe<M, R> executor, bool addif = true)
-        {
-            if (!addif)
-                return this;
-
-            if (IfConstantConditions())
-            {
-                var container = new ExecutorContainer<M, R>(executor);
-                container.LocalCache = this;
-                container.ExecuteConditions = GetCalculatedConditions();
-                _executionQueue.Enqueue(container);
-                _current = container;
-            }
-            return this;
-        }
-        private Pipe<M, R> AddExecutor(Lazy<Pipe<M, R>> executor, bool addif = true)
-        {
-            if (!addif)
-                return this;
-
-            if (IfConstantConditions())
-            {
-                var container = new ExecutorContainer<M, R>(executor);
-                container.LocalCache = this;
-                container.ExecuteConditions = GetCalculatedConditions();
-                _executionQueue.Enqueue(container);
-                _current = container;
-            }
-            return this;
-        }
-
         private Pipe<M, R> SetBreakIfFailed(bool value = true)
         {
             _current.BreakIfFailed = value;

@@ -8,7 +8,6 @@ namespace NSV.ExecutionPipe.Executors
 {
     internal class ExecutorContainer<M, R>
     {
-        private ExecutorType _executorType = ExecutorType.Executor;
         internal ILocalCache LocalCache { get; set; }
         internal bool BreakIfFailed { get; set; }
         internal bool AllowBreak { get; set; }
@@ -21,33 +20,22 @@ namespace NSV.ExecutionPipe.Executors
         {
             get
             {
-                return _executorType == ExecutorType.Executor
-                    ? _lazyExecutor.Value.IsAsync
-                    : _lazyPipe.Value.IsAsync;
+                if (_executor == null)
+                {
+                    _executor = _executorFunc();
+                }
+                return _executor.IsAsync;
             }
         }
-        private Lazy<Executor<M, R>> _lazyExecutor;
-        private Lazy<Pipe<M, R>> _lazyPipe;
-
-        internal ExecutorContainer(Executor<M, R> executor)
+        private Func<IBaseExecutor<M, R>> _executorFunc;
+        private IBaseExecutor<M, R> _executor;
+        internal ExecutorContainer(IBaseExecutor<M, R> executor)
         {
-            _lazyExecutor = new Lazy<Executor<M, R>>(() => executor );
-            _executorType = ExecutorType.Executor;
+            _executorFunc = () => executor;
         }
-        internal ExecutorContainer(Lazy<Executor<M, R>> executor)
+        internal ExecutorContainer(Func<IBaseExecutor<M, R>> executor)
         {
-            _lazyExecutor = executor;
-            _executorType = ExecutorType.Executor;
-        }
-        internal ExecutorContainer(Pipe<M, R> pipe)
-        {
-            _lazyPipe = new Lazy<Pipe<M, R>>(() => pipe);
-            _executorType = ExecutorType.Pipe;
-        }
-        internal ExecutorContainer(Lazy<Pipe<M, R>> pipe)
-        {
-            _lazyPipe = pipe;
-            _executorType = ExecutorType.Pipe;
+            _executorFunc = executor;
         }
 
         internal PipeResult<R> Run(M model)
@@ -79,19 +67,10 @@ namespace NSV.ExecutionPipe.Executors
 
         private IBaseExecutor<M, R> InitExecutor()
         {
-            IBaseExecutor<M, R> executor = null;
-            if (_executorType == ExecutorType.Executor)
-                executor = _lazyExecutor.Value;
-            else
-                executor = _lazyPipe.Value;
+            if (_executor == null)
+                _executor = _executorFunc();
 
-            return executor.UseCache(LocalCache);
+            return _executor.UseCache(LocalCache);
         }
-    }
-
-    internal enum ExecutorType
-    {
-        Executor,
-        Pipe
     }
 }
