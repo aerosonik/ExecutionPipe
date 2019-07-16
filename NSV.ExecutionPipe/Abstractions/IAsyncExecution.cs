@@ -19,7 +19,7 @@ namespace NSV.ExecutionPipe
     #region SyncSequentialPipe<M, R>
     public interface ISyncSequentialPipe<M, R> : ISyncExecutor<M, R>
     {
-        PipeResult<R> CreateResult(M model, PipeResult<R>[] results, TimeSpan elapsed);
+        PipeResult<R> CreatePipeResult(M model, PipeResult<R>[] results);
         ISyncSequentialPipe<M, R> UseStopWatch();
         ISyncSequentialPipe<M, R> UseLocalCacheThreadSafe();
         ISyncSequentialPipe<M, R> UseLocalCache();
@@ -47,7 +47,7 @@ namespace NSV.ExecutionPipe
     #region AsyncSequentialPipe<M, R>
     public interface IAsyncSequentialPipe<M, R> : IAsyncExecutor<M, R>
     {
-        PipeResult<R> CreateResult(M model, PipeResult<R>[] results, TimeSpan elapsed);
+        PipeResult<R> CreatePipeResult(M model, PipeResult<R>[] results);
         IAsyncSequentialPipe<M, R> UseStopWatch();
         IAsyncSequentialPipe<M, R> UseLocalCacheThreadSafe();
         IAsyncSequentialPipe<M, R> UseLocalCache();
@@ -76,7 +76,7 @@ namespace NSV.ExecutionPipe
     #region SyncParallelPipe<M, R>
     public interface ISyncParallelPipe<M, R> : ISyncExecutor<M,R>
     {
-        PipeResult<R> CreateResult(M model, PipeResult<R>[] results, TimeSpan elapsed);
+        PipeResult<R> CreatePipeResult(M model, PipeResult<R>[] results);
         ISyncParallelPipe<M, R> UseStopWatch();
         ISyncParallelPipe<M, R> UseLocalCacheThreadSafe();
         ISyncParallelExecutorBuilder<M, R> Add(ISyncExecutor<M, R> executor);
@@ -100,7 +100,7 @@ namespace NSV.ExecutionPipe
     #region AsyncParallelPipe<M, R>
     public interface IAsyncParallelPipe<M, R> : IAsyncExecutor<M,R>
     {
-        PipeResult<R> CreateResult(M model, PipeResult<R>[] results, TimeSpan elapsed);
+        PipeResult<R> CreatePipeResult(M model, PipeResult<R>[] results);
         IAsyncParallelPipe<M, R> UseStopWatch();
         IAsyncParallelPipe<M, R> UseLocalCacheThreadSafe();
         IAsyncParallelExecutorBuilder<M, R> Add(IAsyncExecutor<M, R> executor);

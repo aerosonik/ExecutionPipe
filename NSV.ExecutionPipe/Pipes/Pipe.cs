@@ -332,11 +332,6 @@ namespace NSV.ExecutionPipe.Pipes
                 if (!RunExecutorIfConditions(container, _model))
                     continue;
 
-                //if (container.IsAsync)
-                //    AsyncHelper.RunSync(ExecuteSubPipeAsync(container, _results.Value));
-                //else
-                //    ExecuteSubPipe(container, _results.Value);
-
                 var result = RunHelper(container);
 
                 if (container.Retry.HasValue && result.Success == ExecutionResult.Failed)
