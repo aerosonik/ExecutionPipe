@@ -3,7 +3,7 @@
 # ExecutionPipe
 Lightweight library with base abstractions and implementations for creating custom pipe of sequential or parallel  excecutions.
 
-[![NuGet](https://img.shields.io/nuget/v/NSV.ExecutionPipe.svg)](https://www.nuget.org/packages/NSV.ExecutionPipe)]
+[![NuGet](https://img.shields.io/nuget/v/NSV.ExecutionPipe.svg)](https://www.nuget.org/packages/NSV.ExecutionPipe) 
 [![Build status](https://ci.appveyor.com/api/projects/status/r3yptmhufh3dl1xc?svg=true)](https://ci.appveyor.com/project/aerosonik/validationpipe)
 
 ### Installation
