@@ -42,7 +42,6 @@ namespace NSV.ExecutionPipe.PipeLines.Implementations
                         .Select(x => x.calculated.Value)
                         .ToArray());
         }
-
         protected void IfCondition(bool condition)
         {
             if (!_ifConditionStack.HasValue)
@@ -87,20 +86,18 @@ namespace NSV.ExecutionPipe.PipeLines.Implementations
 
             _localCache = new Dictionary<object, object>();
         }
-        internal bool RunExecutorIfConditions(BaseExecutorContainer<M, R> container, M model)
+        internal bool RunExecutorIfConditions(IBaseExecutorContainer<M, R> container, M model)
         {
             return container.ExecuteConditions.HasValue
                 ? container.ExecuteConditions.Value.All(x => x(model))
                 : true;
         }
-
-        internal bool Break(BaseExecutorContainer<M, R> container, PipeResult<R> result)
+        internal bool Break(IBaseExecutorContainer<M, R> container, PipeResult<R> result)
         {
             return (result.Success == ExecutionResult.Failed &&
                         container.BreakIfFailed) ||
                    (result.Break && container.AllowBreak);
         }
-
         protected PipeResult<R> RunSync(M model, ILocalCache cache, Func<PipeResult<R>> func)
         {
             _model = model;
@@ -115,7 +112,6 @@ namespace NSV.ExecutionPipe.PipeLines.Implementations
             _stopWatch.Value.Stop();
             return result.SetElapsed(_stopWatch.Value.Elapsed);
         }
-
         protected async Task<PipeResult<R>> RunAsync(M model, ILocalCache cache, Func<Task<PipeResult<R>>> func)
         {
             _model = model;
@@ -131,6 +127,28 @@ namespace NSV.ExecutionPipe.PipeLines.Implementations
             return result.SetElapsed(_stopWatch.Value.Elapsed);
         }
 
+        internal void SetContainer<TContainer, TExecutor>(
+            Func<TContainer> containerFunc,
+            bool addif,
+            //Queue<TContainer> executionQueue,
+            TContainer current)
+            where TContainer : BaseExecutorContainer<M, R>
+        {
+            if (!addif)
+                return;
+
+            if (IfConstantConditions())
+            {
+                var container = containerFunc();
+
+                container.LocalCache = this;
+                container.ExecuteConditions = GetCalculatedConditions();
+
+                //executionQueue.Enqueue(container);
+                current = container;
+            }
+        }
+
         #region ILocalCache
 
         public T GetObject<T>(object key)
@@ -144,7 +162,6 @@ namespace NSV.ExecutionPipe.PipeLines.Implementations
 
             return default(T);
         }
-
         public void SetObject<T>(object key, T value)
         {
             if (_useParentalCache && _externalCache.HasValue)
@@ -158,7 +175,6 @@ namespace NSV.ExecutionPipe.PipeLines.Implementations
                 return;
             }
         }
-
         public ILocalCache GetLocalCacheObject()
         {
             return this;

@@ -14,25 +14,25 @@ namespace NSV.ExecutionPipe.PipeLines.Implementations
         #region ISyncSequentialPipe<M, R>
         public ISyncSequentialExecutorBuilder<M, R> Add(ISyncExecutor<M, R> executor)
         {
-            AddSequentialExecutor(executor);
+            AddExecutor(executor);
             return this;
         }
 
         public ISyncSequentialExecutorBuilder<M, R> Add(ISyncExecutor<M, R> executor, bool addif)
         {
-            AddSequentialExecutor(executor, addif);
+            AddExecutor(executor, addif);
             return this;
         }
 
         public ISyncSequentialExecutorBuilder<M, R> Add(Func<ISyncExecutor<M, R>> executor)
         {
-            AddSequentialExecutor(executor);
+            AddExecutor(executor);
             return this;
         }
 
         public ISyncSequentialExecutorBuilder<M, R> Add(Func<ISyncExecutor<M, R>> executor, bool addif)
         {
-            AddSequentialExecutor(executor, addif);
+            AddExecutor(executor, addif);
             return this;
         }
 
@@ -113,11 +113,22 @@ namespace NSV.ExecutionPipe.PipeLines.Implementations
         }
         ISyncSequentialExecutorBuilder<M, R> ISyncSequentialExecutorBuilder<M, R>.UseStopWatch()
         {
-            _current.SetUseStopWatch();
+            //_current.SetUseStopWatch();
+            _current = new SyncExecutorContainerStopWatch<M,R>(_current);
+            return this;
+        }
+        ISyncSequentialExecutorBuilder<M, R> ISyncSequentialExecutorBuilder<M, R>.UseRestrictedExecution(int maxCount)
+        {
+            //_current.SetUseStopWatch();
+            _current = new SyncExecutorContainerSemaforeSlim<M, R>(_current, maxCount);
             return this;
         }
         ISyncSequentialPipe<M, R> ISyncSequentialExecutorBuilder<M, R>.Build()
         {
+            if (_current == null)
+                throw new ArgumentException("Current ExecutorContainer is null");
+
+            _executionQueue.Enqueue(_current);
             return this;
         }
         #endregion

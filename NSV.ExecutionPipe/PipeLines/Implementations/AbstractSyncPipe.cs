@@ -1,56 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace NSV.ExecutionPipe.PipeLines.Implementations
 {
     public abstract class AbstractSyncPipe<M, R> : AbstractPipe<M, R>
     {
-        internal readonly Queue<SyncExecutorContainer<M, R>> _executionQueue
+        internal readonly Queue<ISyncExecutorContainer<M, R>> _executionQueue
             = new Queue<SyncExecutorContainer<M, R>>();
-        internal SyncExecutorContainer<M, R> _current;
+        internal ISyncExecutorContainer<M, R> _current;
 
-        protected void AddParallelExecutor(ISyncExecutor<M, R> executor, bool addif = true)
+        protected void AddExecutor(ISyncExecutor<M, R> executor, bool addif = true)
         {
-            if (!addif)
-                return;
-
-            if (IfConstantConditions())
-            {
-                var container = new SyncExecutorContainer<M, R>(executor)
-                {
-                    LocalCache = this,
-                    ExecuteConditions = GetCalculatedConditions()
-                };
-                _executionQueue.Enqueue(container);
-                _current = container;
-            }
+            SetContainer<SyncExecutorContainer<M, R>, ISyncExecutor<M, R>>(
+                () => new SyncExecutorContainer<M, R>(executor),
+                addif,
+               // _executionQueue,
+                _current);
         }
-        protected void AddParallelExecutor(Func<ISyncExecutor<M, R>> executor, bool addif = true)
+        protected void AddExecutor(Func<ISyncExecutor<M, R>> executor, bool addif = true)
         {
-            if (!addif)
-                return;
-
-            if (IfConstantConditions())
-            {
-                var container = new SyncExecutorContainer<M, R>(executor)
-                {
-                    LocalCache = this,
-                    ExecuteConditions = GetCalculatedConditions()
-                };
-                _executionQueue.Enqueue(container);
-                _current = container;
-            }
+            SetContainer<ISyncExecutorContainer<M, R>, ISyncExecutor<M, R>>(
+                () => new SyncExecutorContainer<M, R>(executor),
+                addif,
+                //_executionQueue,
+                _current);
         }
-
-        protected void AddSequentialExecutor(ISyncExecutor<M, R> executor, bool addif = true)
-        {
-            AddParallelExecutor(executor, addif);
-        }
-        protected void AddSequentialExecutor(Func<ISyncExecutor<M, R>> executor, bool addif = true)
-        {
-            AddParallelExecutor(executor, addif);
-        }
-
     }
 }

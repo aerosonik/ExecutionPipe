@@ -17,25 +17,25 @@ namespace NSV.ExecutionPipe.PipeLines.Implementations
         #region IAsyncSequentialPipe<M, R>
         public IAsyncSequentialExecutorBuilder<M, R> Add(IAsyncExecutor<M, R> executor)
         {
-            AddSequentialExecutor(executor);
+            AddExecutor(executor);
             return this;
         }
 
         public IAsyncSequentialExecutorBuilder<M, R> Add(IAsyncExecutor<M, R> executor, bool addif)
         {
-            AddSequentialExecutor(executor, addif);
+            AddExecutor(executor, addif);
             return this;
         }
 
         public IAsyncSequentialExecutorBuilder<M, R> Add(Func<IAsyncExecutor<M, R>> executor)
         {
-            AddSequentialExecutor(executor);
+            AddExecutor(executor);
             return this;
         }
 
         public IAsyncSequentialExecutorBuilder<M, R> Add(Func<IAsyncExecutor<M, R>> executor, bool addif)
         {
-            AddSequentialExecutor(executor, addif);
+            AddExecutor(executor, addif);
             return this;
         }
 
@@ -104,6 +104,10 @@ namespace NSV.ExecutionPipe.PipeLines.Implementations
 
         IAsyncSequentialPipe<M, R> IAsyncSequentialExecutorBuilder<M, R>.Build()
         {
+            if (_current == null)
+                throw new ArgumentException("Current ExecutorContainer is null");
+
+            _executionQueue.Enqueue(_current);
             return this;
         }
 
