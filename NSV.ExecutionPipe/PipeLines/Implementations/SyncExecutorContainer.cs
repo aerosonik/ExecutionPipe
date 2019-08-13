@@ -18,12 +18,13 @@ namespace NSV.ExecutionPipe.PipeLines.Implementations
 
         public PipeResult<R> Run(M model)
         {
-            return _settings
-                .Executor()
-                .ExecuteSync(model, _settings.Cache)
+            var executor = _settings.Executor();
+            executor.Cache = _settings.Cache;
+            return executor.ExecuteSync(model)
                 .SetLabel(_settings.Label);
         }
     }
+
     internal interface ISyncExecutorContainer<M, R>
     {
         PipeResult<R> Run(M model);
@@ -65,7 +66,7 @@ namespace NSV.ExecutionPipe.PipeLines.Implementations
         {
             PipeResult<R> result = PipeResult<R>.DefaultUnSuccessful;
 
-            var semafore = new SemaphoreSlim(0, _settings.RestrictedModeMaxThreads);
+            var semafore = new SemaphoreSlim(0, _settings.RestrictedModeMaxThreads);// бредд
             semafore.Wait();
             try
             {

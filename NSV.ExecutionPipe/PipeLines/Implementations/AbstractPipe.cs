@@ -1,4 +1,6 @@
 ﻿using NSV.ExecutionPipe.Models;
+using NSV.ExecutionPipe.PipeLines.Infrastructure;
+using NSV.ExecutionPipe.PipeLines.Interfaces;
 using NSV.ExecutionPipe.Pipes;
 using System;
 using System.Collections.Concurrent;
@@ -10,17 +12,16 @@ using System.Threading.Tasks;
 
 namespace NSV.ExecutionPipe.PipeLines.Implementations
 {
-    public abstract class AbstractPipe<M, R> : ILocalCache
+    public abstract class AbstractPipe<M, R>: ICacheContainer
     {
         protected bool _finished = false;
         protected Optional<M> _model = Optional<M>.Default;
         protected Optional<Stopwatch> _stopWatch = Optional<Stopwatch>.Default;
         protected Optional<List<PipeResult<R>>> _results = Optional<List<PipeResult<R>>>.Default;
-        protected Optional<IDictionary<object, object>> _localCache = Optional<IDictionary<object, object>>.Default;
-        protected Optional<ILocalCache> _externalCache = Optional<ILocalCache>.Default;
         protected Optional<Stack<(Optional<Func<M, bool>> calculated, Optional<bool> constant)>> _ifConditionStack
                 = Optional<Stack<(Optional<Func<M, bool>> calculated, Optional<bool> constant)>>.Default;
-        protected bool _useParentalCache = false;
+
+        public IPipeCache Cache { get; set; } = PipeCacheObject.GetDefaultCache();
 
         protected bool IfConstantConditions()
         {
@@ -68,23 +69,11 @@ namespace NSV.ExecutionPipe.PipeLines.Implementations
         }
         public void LocalCacheThreadSafe()
         {
-            if (_useParentalCache)
-                return;
-
-            if (_finished)
-                throw new Exception(Const.PipeIsAlreadyFinished);
-
-            _localCache = new ConcurrentDictionary<object, object>();
+            Cache = PipeCacheObject.GetCache();
         }
         public void LocalCache()
         {
-            if (_useParentalCache)
-                return;
-
-            if (_finished)
-                throw new Exception(Const.PipeIsAlreadyFinished);
-
-            _localCache = new Dictionary<object, object>();
+            Cache = PipeCacheObject.GetThreadSafeCache();
         }
         internal bool RunExecutorIfConditions(IBaseExecutorContainer<M, R> container, M model)
         {
@@ -98,11 +87,11 @@ namespace NSV.ExecutionPipe.PipeLines.Implementations
                         container.BreakIfFailed) ||
                    (result.Break && container.AllowBreak);
         }
-        protected PipeResult<R> RunSync(M model, ILocalCache cache, Func<PipeResult<R>> func)
+        protected PipeResult<R> RunSync(M model, IPipeCache cache, Func<PipeResult<R>> func)
         {
             _model = model;
             if (_useParentalCache)
-                _externalCache = Optional<ILocalCache>.SetValue(cache);
+                _externalCache = Optional<IPipeCache>.SetValue(cache);
 
             if (!_stopWatch.HasValue)
                 return func();
@@ -112,11 +101,11 @@ namespace NSV.ExecutionPipe.PipeLines.Implementations
             _stopWatch.Value.Stop();
             return result.SetElapsed(_stopWatch.Value.Elapsed);
         }
-        protected async Task<PipeResult<R>> RunAsync(M model, ILocalCache cache, Func<Task<PipeResult<R>>> func)
+        protected async Task<PipeResult<R>> RunAsync(M model, IPipeCache cache, Func<Task<PipeResult<R>>> func)
         {
             _model = model;
             if (_useParentalCache)
-                _externalCache = Optional<ILocalCache>.SetValue(cache);
+                _externalCache = Optional<IPipeCache>.SetValue(cache);
 
             if (!_stopWatch.HasValue)
                 return await func();
@@ -148,39 +137,5 @@ namespace NSV.ExecutionPipe.PipeLines.Implementations
                 current = container;
             }
         }
-
-        #region ILocalCache
-
-        public T GetObject<T>(object key)
-        {
-            if (_useParentalCache && _externalCache.HasValue)
-                return _externalCache.Value.GetObject<T>(key);
-
-            if (_localCache.HasValue && !_useParentalCache)
-                if (_localCache.Value.TryGetValue(key, out var value))
-                    return (T)value;
-
-            return default(T);
-        }
-        public void SetObject<T>(object key, T value)
-        {
-            if (_useParentalCache && _externalCache.HasValue)
-            {
-                _externalCache.Value.SetObject(key, value);
-                return;
-            }
-            if (_localCache.HasValue && !_useParentalCache)
-            {
-                _localCache.Value.Add(key, value);
-                return;
-            }
-        }
-        public ILocalCache GetLocalCacheObject()
-        {
-            return this;
-        }
-
-        #endregion
-
     }
 }

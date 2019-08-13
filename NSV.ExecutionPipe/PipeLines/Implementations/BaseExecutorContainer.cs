@@ -1,4 +1,5 @@
 ﻿using NSV.ExecutionPipe.Models;
+using NSV.ExecutionPipe.PipeLines.Infrastructure;
 using NSV.ExecutionPipe.Pipes;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ namespace NSV.ExecutionPipe.PipeLines.Implementations
     internal abstract class ExecutorContainerSettings<M, R> :
         IExecutorContainerSettings<M, R>
     {
-        public ILocalCache Cache { get; set; }
+        public IPipeCache Cache { get; set; }
         public bool BreakIfFailed { get; set; }
         public bool AllowBreak { get; set; }
         public string Label { get; set; } = string.Empty;
@@ -22,22 +23,22 @@ namespace NSV.ExecutionPipe.PipeLines.Implementations
         public int RestrictedModeMaxThreads { get; set; }
     }
 
-    internal class SyncExecutorContainerSettings<M, R> : 
-        ExecutorContainerSettings<M, R>,
-        ISyncExecutorContainerSettings<M,R>
-    {
-        public Func<ISyncExecutor<M, R>> Executor { get; set; }
-    }
-    internal class AsyncExecutorContainerSettings<M, R> :
-        ExecutorContainerSettings<M, R>,
-        IAsyncExecutorContainerSettings<M, R>
-    {
-        public Func<IAsyncExecutor<M, R>> Executor { get; set; }
-    }
+    //internal class SyncExecutorContainerSettings<M, R> : 
+    //    ExecutorContainerSettings<M, R>,
+    //    ISyncExecutorContainerSettings<M,R>
+    //{
+    //    public Func<ISyncExecutor<M, R>> Executor { get; set; }
+    //}
+    //internal class AsyncExecutorContainerSettings<M, R> :
+    //    ExecutorContainerSettings<M, R>,
+    //    IAsyncExecutorContainerSettings<M, R>
+    //{
+    //    public Func<IAsyncExecutor<M, R>> Executor { get; set; }
+    //}
 
     internal interface IExecutorContainerSettings<M, R>
     {
-        ILocalCache Cache { get; set; }
+        IPipeCache Cache { get; set; }
         bool BreakIfFailed { get; set; }
         bool AllowBreak { get; set; }
         string Label { get; set; }
