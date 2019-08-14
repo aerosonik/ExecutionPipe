@@ -41,7 +41,7 @@ namespace NSV.ExecutionPipe.xTests
                 Id = 1111,
                 Text = "Test Result 1"
             };
-            return PipeResult<TestResult>.DefaultUnSuccessful.SetValue(testResult);
+            return PipeResult<TestResult>.DefaultUnSuccessfulBreak.SetValue(testResult);
         }
     }
 
@@ -102,6 +102,37 @@ namespace NSV.ExecutionPipe.xTests
             {
                 Id = 3,
                 Text = "Test Result 3"
+            };
+            return PipeResult<TestResult>.DefaultSuccessful.SetValue(testResult);
+        }
+    }
+
+    public class TestExecutorDefault : Executor<TestModel, TestResult>
+    {
+        //public TestExecutorDefault()
+        //{
+        //    IsAsync = true;
+        //}
+        public override PipeResult<TestResult> Execute(TestModel model)
+        {
+            Thread.Sleep(model.Milliseconds);
+            model.Id += 1;
+            var testResult = new TestResult
+            {
+                Id = 3,
+                Text = "Test Result 3"
+            };
+            return PipeResult<TestResult>.DefaultSuccessful.SetValue(testResult);
+        }
+
+        public override async Task<PipeResult<TestResult>> ExecuteAsync(TestModel model)
+        {
+            await Task.Delay(model.Milliseconds);
+            model.Id = 0;
+            var testResult = new TestResult
+            {
+                Id = 0,
+                Text = "default"
             };
             return PipeResult<TestResult>.DefaultSuccessful.SetValue(testResult);
         }

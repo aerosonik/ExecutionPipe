@@ -26,13 +26,14 @@ namespace NSV.ExecutionPipe.Pipes
         ISequentialPipe<M, R> AddExecutor(IBaseExecutor<M, R> executor, bool addif);
         ISequentialPipe<M, R> AddExecutor(Func<IBaseExecutor<M, R>> executor);
         ISequentialPipe<M, R> AddExecutor(Func<IBaseExecutor<M, R>> executor, bool addif);
-
+        ISequentialPipe<M, R> SetDefault();
         ISequentialPipe<M, R> SetUseStopWatch();
         ISequentialPipe<M, R> SetLabel(string label);
         ISequentialPipe<M, R> SetRetryIfFailed(int count, int timeOutMilliseconds);
         ISequentialPipe<M, R> If(bool condition);
         ISequentialPipe<M, R> If(Func<M, bool> condition);
         ISequentialPipe<M, R> EndIf();
+
     }
 
     public interface IParallelPipe<M, R>: IBasePipe<M, R>
