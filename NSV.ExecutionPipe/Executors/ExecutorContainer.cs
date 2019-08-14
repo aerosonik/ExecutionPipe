@@ -8,6 +8,7 @@ namespace NSV.ExecutionPipe.Executors
 {
     internal class ExecutorContainer<M, R>
     {
+        internal bool IsDefault { get; set; } = false;
         internal ILocalCache LocalCache { get; set; }
         internal bool BreakIfFailed { get; set; }
         internal bool AllowBreak { get; set; }
