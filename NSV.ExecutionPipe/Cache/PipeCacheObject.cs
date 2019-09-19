@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace NSV.ExecutionPipe.PipeLines.Infrastructure
+namespace NSV.ExecutionPipe.Cache
 {
     public class PipeCacheObject : IPipeCache
     {

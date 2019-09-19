@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace NSV.ExecutionPipe.PipeLines.Infrastructure
+﻿namespace NSV.ExecutionPipe.Cache
 {
     public interface IPipeCache
     {
