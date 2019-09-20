@@ -109,18 +109,18 @@ namespace NSV.ExecutionPipe.xTests
 
     public class TestExecutorDefault : Executor<TestModel, TestResult>
     {
-        //public TestExecutorDefault()
-        //{
-        //    IsAsync = true;
-        //}
+        public TestExecutorDefault()
+        {
+            IsAsync = true;
+        }
         public override PipeResult<TestResult> Execute(TestModel model)
         {
             Thread.Sleep(model.Milliseconds);
-            model.Id += 1;
+            model.Id = 0;
             var testResult = new TestResult
             {
-                Id = 3,
-                Text = "Test Result 3"
+                Id = 0,
+                Text = "Default"
             };
             return PipeResult<TestResult>.DefaultSuccessful.SetValue(testResult);
         }

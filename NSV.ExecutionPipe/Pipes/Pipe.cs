@@ -355,7 +355,7 @@ namespace NSV.ExecutionPipe.Pipes
                     {
                         var defaultResult = RunHelper(_defaultExecutor.Value);
                         _results.Value.Add(defaultResult);
-                        break;
+                        //break;
                     }
                     if (container.CreateResult.HasValue)
                         return container.CreateResult.Value(_model, result);
@@ -411,7 +411,15 @@ namespace NSV.ExecutionPipe.Pipes
 
                 if (Break(container, result))
                 {
-                    if (container.CreateResult != null)
+                    if (_defaultExecutor.HasValue && !container.IsDefault)
+                    {
+                        var defaultResult = _defaultExecutor.Value.IsAsync
+                            ? await _defaultExecutor.Value.RunAsync(_model)
+                            : _defaultExecutor.Value.Run(_model);
+                        _results.Value.Add(defaultResult);
+                        //break;
+                    }
+                    if (container.CreateResult.HasValue)
                         return container.CreateResult.Value(_model, result);
                     break;
                 }
