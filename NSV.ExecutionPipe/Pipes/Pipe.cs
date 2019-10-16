@@ -32,6 +32,7 @@ namespace NSV.ExecutionPipe.Pipes
         private bool _useParentalCache = false;
         private Optional<Stack<(Optional<Func<M, bool>> calculated, Optional<bool> constant)>> _ifConditionStack 
                 = Optional<Stack<(Optional<Func<M, bool>> calculated, Optional<bool> constant)>>.Default;
+        private Optional<ExecutorContainer<M, R>> _defaultExecutor = Optional<ExecutorContainer<M, R>>.Default;
 
         #endregion
 
@@ -190,6 +191,10 @@ namespace NSV.ExecutionPipe.Pipes
         #endregion
 
         #region ISequentialPipe<M,R> Explicitly
+        ISequentialPipe<M, R> ISequentialPipe<M, R>.SetDefault()
+        {
+            return SetDefault(true);
+        }
 
         ISequentialPipe<M, R> ISequentialPipe<M, R>.AddExecutor(
             IBaseExecutor<M, R> executor)
@@ -346,6 +351,12 @@ namespace NSV.ExecutionPipe.Pipes
                 _results.Value.Add(result);
                 if (Break(container, result))
                 {
+                    if (_defaultExecutor.HasValue && !container.IsDefault)
+                    {
+                        var defaultResult = RunHelper(_defaultExecutor.Value);
+                        _results.Value.Add(defaultResult);
+                        //break;
+                    }
                     if (container.CreateResult.HasValue)
                         return container.CreateResult.Value(_model, result);
                     break;
@@ -400,7 +411,15 @@ namespace NSV.ExecutionPipe.Pipes
 
                 if (Break(container, result))
                 {
-                    if (container.CreateResult != null)
+                    if (_defaultExecutor.HasValue && !container.IsDefault)
+                    {
+                        var defaultResult = _defaultExecutor.Value.IsAsync
+                            ? await _defaultExecutor.Value.RunAsync(_model)
+                            : _defaultExecutor.Value.Run(_model);
+                        _results.Value.Add(defaultResult);
+                        //break;
+                    }
+                    if (container.CreateResult.HasValue)
                         return container.CreateResult.Value(_model, result);
                     break;
                 }
@@ -476,22 +495,17 @@ namespace NSV.ExecutionPipe.Pipes
             return result;
         }
 
-        private Pipe<M, R> AddExecutor(IBaseExecutor<M, R> executor, bool addif = true)
+        private Pipe<M, R> AddExecutor(
+            IBaseExecutor<M, R> executor, 
+            bool addif = true)
         {
-            if (!addif)
-                return this;
-
-            if (IfConstantConditions())
-            {
-                var container = new ExecutorContainer<M,R>(executor);
-                container.LocalCache = this;
-                container.ExecuteConditions = GetCalculatedConditions();
-                _executionQueue.Enqueue(container);
-                _current = container;
-            }
-            return this;
+            Func<IBaseExecutor<M, R>> executorFunc = () => executor;
+            return AddExecutor(executorFunc, addif);
         }
-        private Pipe<M, R> AddExecutor(Func<IBaseExecutor<M, R>> executor, bool addif = true)
+
+        private Pipe<M, R> AddExecutor(
+            Func<IBaseExecutor<M, R>> executor, 
+            bool addif = true)
         {
             if (!addif)
                 return this;
@@ -504,6 +518,13 @@ namespace NSV.ExecutionPipe.Pipes
                 _executionQueue.Enqueue(container);
                 _current = container;
             }
+            return this;
+        }
+
+        private Pipe<M,R> SetDefault(bool isDefault)
+        {
+            _current.IsDefault = isDefault;
+            _defaultExecutor = _current;
             return this;
         }
         private Pipe<M, R> SetBreakIfFailed(bool value = true)
@@ -527,7 +548,7 @@ namespace NSV.ExecutionPipe.Pipes
             _current.Label = label;
             return this;
         }
-        Pipe<M, R> SetRetryIfFailed(int count, int timeOutMilliseconds)
+        private Pipe<M, R> SetRetryIfFailed(int count, int timeOutMilliseconds)
         {
             _current.Retry = new RetryModel
             {

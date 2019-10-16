@@ -1,6 +1,7 @@
 using NSV.ExecutionPipe.Models;
 using NSV.ExecutionPipe.Pipes;
 using System;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace NSV.ExecutionPipe.xTests
@@ -77,7 +78,70 @@ namespace NSV.ExecutionPipe.xTests
             Assert.True(testPipe.Elapsed.TotalMilliseconds < 6000);
             Assert.True(model.Id == 3);
         }
+        [Fact]
+        public void Pipe_Execution_Sequential_Default()
+        {
+            var executor1 = new TestExecutor1();
+            var executor2 = new TestExecutor2();
+            var executor3 = new TestExecutor3();
+            var defaultExecutor = new TestExecutorDefault();
+            var model = new TestModel
+            {
+                Id = 1,
+                Name = "model 1",
+                Milliseconds = 2000
+            };
+            Pipe<TestModel, TestResult> testPipe = new TestPipe();
+            testPipe
+                .UseStopWatch()
+                .AsSequential()
+                .AddExecutor(executor1)
+                    .SetAllowBreak()
+                    .SetBreakIfFailed()
+                    .SetResultHandler((m, r) => r)
+                .AddExecutor(executor2)
+                .AddExecutor(executor3)
+                .AddExecutor(defaultExecutor)
+                    .SetDefault()
+                .Finish();
 
+            var result = testPipe.Execute(model);
+            Assert.Equal(ExecutionResult.Failed, result.Success);
+            Assert.True(testPipe.Elapsed.TotalMilliseconds < 6000);
+            Assert.True(model.Id == 0);
+        }
+        [Fact]
+        public async Task Pipe_Execution_Sequential_Default_Async()
+        {
+            var executor1 = new TestExecutor1();
+            var executor2 = new TestExecutor2();
+            var executor3 = new TestExecutor3();
+            var defaultExecutor = new TestExecutorDefault();
+            var model = new TestModel
+            {
+                Id = 1,
+                Name = "model 1",
+                Milliseconds = 2000
+            };
+            Pipe<TestModel, TestResult> testPipe = new TestPipe();
+            testPipe
+                .UseStopWatch()
+                .AsSequential()
+                .AddExecutor(executor1)
+                    .SetAllowBreak()
+                    .SetBreakIfFailed()
+                    .SetResultHandler((m, r) => r)
+                .AddExecutor(executor2)
+                .AddExecutor(executor3)
+                .AddExecutor(defaultExecutor)
+                    .SetDefault()
+                .Finish();
+
+            var result = await testPipe.ExecuteAsync(model);
+            Assert.Equal(ExecutionResult.Failed, result.Success);
+            Assert.True(testPipe.Elapsed.TotalMilliseconds < 6000);
+            Assert.True(model.Id == 0);
+        }
         [Fact]
         public void Pipe_Execution_Parallel()
         {
