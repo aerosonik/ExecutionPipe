@@ -30,8 +30,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="PipeLines\Builders\" />
-    <Folder Include="PipeLines\Infrastructure\" />
+    <Folder Include="Pipes\Sync\Parallel\" />
+    <Folder Include="Pipes\Sync\Sequential\" />
   </ItemGroup>
 
 </Project>

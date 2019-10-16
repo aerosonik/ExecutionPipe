@@ -1,9 +1,10 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace NSV.ExecutionPipe.Cache
 {
-    public class PipeCacheObject : IPipeCache
+    internal class PipeCacheObject : IPipeCache
     {
         private readonly Optional<IDictionary<object, object>> _internalCache;
 
@@ -14,25 +15,25 @@ namespace NSV.ExecutionPipe.Cache
             else
                 _internalCache = new Dictionary<object, object>();
         }
-        private PipeCacheObject()
-        {
-            _internalCache = Optional<IDictionary<object, object>>.Default;
-        }
+        //internal PipeCacheObject()
+        //{
+        //    _internalCache = Optional<IDictionary<object, object>>.Default;
+        //}
 
-        public static IPipeCache GetCache()
+        internal static Func<IPipeCache> GetCache()
         {
-            return new PipeCacheObject(false);
+            return () => new PipeCacheObject(false);
         }
-        public static IPipeCache GetThreadSafeCache()
+        internal static Func<IPipeCache> GetThreadSafeCache()
         {
-            return new PipeCacheObject(true);
+            return () => new PipeCacheObject(true);
         }
-        public static IPipeCache GetDefaultCache()
-        {
-            return new PipeCacheObject();
-        }
+        //internal static IPipeCache GetDefaultCache()
+        //{
+        //    return new PipeCacheObject();
+        //}
 
-        public T Get<T>(object key)
+        T IPipeCache.Get<T>(object key)
         {
             if (_internalCache.HasValue)
             {
@@ -41,14 +42,14 @@ namespace NSV.ExecutionPipe.Cache
             }
             return default(T);
         }
-        public void Set<T>(object key, T value)
+        void IPipeCache.Set<T>(object key, T value)
         {
             if (_internalCache.HasValue)
             {
                 _internalCache.Value.Add(key, value);
             }
         }
-        public void Delete(object key)
+        void IPipeCache.Delete(object key)
         {
             if (_internalCache.HasValue)
             {

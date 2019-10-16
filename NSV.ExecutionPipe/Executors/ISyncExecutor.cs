@@ -3,18 +3,18 @@ using NSV.ExecutionPipe.Models;
 
 namespace NSV.ExecutionPipe.Executors
 {
-    public interface ISyncExecutor<M, R> : ICacheContainer
+    public interface ISyncExecutor<M, R> 
     {
-        PipeResult<R> ExecuteAsync(M model);
+        PipeResult<R> ExecuteAsync(M model, IPipeCache pipeCache = null);
     }
 
-    public interface ISyncExecutor<M> : ICacheContainer
+    public interface ISyncExecutor<M>
     {
-        PipeResult ExecuteAsync(M model);
+        PipeResult ExecuteAsync(M model, IPipeCache pipeCache = null);
     }
 
-    public interface ISyncExecutor : ICacheContainer
+    public interface ISyncExecutor
     {
-        PipeResult ExecuteAsync();
+        PipeResult ExecuteAsync(IPipeCache pipeCache = null);
     }
 }

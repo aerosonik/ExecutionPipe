@@ -4,18 +4,18 @@ using System.Threading.Tasks;
 
 namespace NSV.ExecutionPipe.Executors
 {
-    public interface IAsyncExecutor<M, R>: ICacheContainer
+    public interface IAsyncExecutor<M, R>
     {
-        Task<PipeResult<R>> ExecuteAsync(M model);
+        Task<PipeResult<R>> ExecuteAsync(M model, IPipeCache pipeCache = null);
     }
 
-    public interface IAsyncExecutor<M> : ICacheContainer
+    public interface IAsyncExecutor<M>
     {
-        Task<PipeResult> ExecuteAsync(M model);
+        Task<PipeResult> ExecuteAsync(M model, IPipeCache pipeCache = null);
     }
 
-    public interface IAsyncExecutor : ICacheContainer
+    public interface IAsyncExecutor
     {
-        Task<PipeResult> ExecuteAsync();
+        Task<PipeResult> ExecuteAsync(IPipeCache pipeCache = null);
     }
 }
