@@ -31,6 +31,19 @@ namespace NSV.ExecutionPipe.Builders.Async.Sequential
         IAsyncSequentialPipeBuilder<M, R> EndIf();
 
         IAsyncPipe<M, R> Return(Func<M, PipeResult<R>[], PipeResult<R>> rersultHandler);
+
+        IAsyncSequentialDefaultExecutorBuilder<M, R> Default(IAsyncExecutor<M, R> executor);
+        IAsyncSequentialDefaultExecutorBuilder<M, R> Default(IAsyncExecutor<M, R> executor, bool addif);
+        IAsyncSequentialDefaultExecutorBuilder<M, R> Default(Func<IAsyncExecutor<M, R>> executor);
+        IAsyncSequentialDefaultExecutorBuilder<M, R> Default(Func<IAsyncExecutor<M, R>> executor, bool addif);
+        IAsyncSequentialDefaultExecutorBuilder<M, R> Default(Func<M, Task<PipeResult<R>>> executor);
+        IAsyncSequentialDefaultExecutorBuilder<M, R> Default(Func<M, Task<PipeResult<R>>> executor, bool addif);
+        IAsyncSequentialDefaultExecutorBuilder<M, R> Default(Func<M, IPipeCache, Task<PipeResult<R>>> executor);
+        IAsyncSequentialDefaultExecutorBuilder<M, R> Default(Func<M, IPipeCache, Task<PipeResult<R>>> executor, bool addif);
+        IAsyncSequentialDefaultExecutorBuilder<M, R> Default(Func<M, PipeResult<R>> executor);
+        IAsyncSequentialDefaultExecutorBuilder<M, R> Default(Func<M, PipeResult<R>> executor, bool addif);
+        IAsyncSequentialDefaultExecutorBuilder<M, R> Default(Func<M, IPipeCache, PipeResult<R>> executor);
+        IAsyncSequentialDefaultExecutorBuilder<M, R> Default(Func<M, IPipeCache, PipeResult<R>> executor, bool addif);
     }
 
     public interface IAsyncSequentialPipeBuilder<M>
@@ -57,7 +70,20 @@ namespace NSV.ExecutionPipe.Builders.Async.Sequential
         IAsyncSequentialPipeBuilder<M> If(Func<M, bool> condition);
         IAsyncSequentialPipeBuilder<M> EndIf();
 
-        IAsyncExecutor<M> ToAsyncExecutor();
+        IAsyncPipe<M> Return(Func<M, PipeResult[], PipeResult> rersultHandler);
+
+        IAsyncSequentialDefaultExecutorBuilder<M> Default(IAsyncExecutor<M> executor);
+        IAsyncSequentialDefaultExecutorBuilder<M> Default(IAsyncExecutor<M> executor, bool addif);
+        IAsyncSequentialDefaultExecutorBuilder<M> Default(Func<IAsyncExecutor<M>> executor);
+        IAsyncSequentialDefaultExecutorBuilder<M> Default(Func<IAsyncExecutor<M>> executor, bool addif);
+        IAsyncSequentialDefaultExecutorBuilder<M> Default(Func<M, Task<PipeResult>> executor);
+        IAsyncSequentialDefaultExecutorBuilder<M> Default(Func<M, Task<PipeResult>> executor, bool addif);
+        IAsyncSequentialDefaultExecutorBuilder<M> Default(Func<M, IPipeCache, Task<PipeResult>> executor);
+        IAsyncSequentialDefaultExecutorBuilder<M> Default(Func<M, IPipeCache, Task<PipeResult>> executor, bool addif);
+        IAsyncSequentialDefaultExecutorBuilder<M> Default(Func<M, PipeResult> executor);
+        IAsyncSequentialDefaultExecutorBuilder<M> Default(Func<M, PipeResult> executor, bool addif);
+        IAsyncSequentialDefaultExecutorBuilder<M> Default(Func<M, IPipeCache, PipeResult> executor);
+        IAsyncSequentialDefaultExecutorBuilder<M> Default(Func<M, IPipeCache, PipeResult> executor, bool addif);
     }
 
     public interface IAsyncSequentialPipeBuilder
@@ -83,6 +109,17 @@ namespace NSV.ExecutionPipe.Builders.Async.Sequential
         IAsyncSequentialPipeBuilder If(bool condition);
         IAsyncSequentialPipeBuilder EndIf();
 
-        IAsyncExecutor ToAsyncExecutor();
+        IAsyncSequentialDefaultExecutorBuilder Default(IAsyncExecutor executor);
+        IAsyncSequentialDefaultExecutorBuilder Default(IAsyncExecutor executor, bool addif);
+        IAsyncSequentialDefaultExecutorBuilder Default(Func<IAsyncExecutor> executor);
+        IAsyncSequentialDefaultExecutorBuilder Default(Func<IAsyncExecutor> executor, bool addif);
+        IAsyncSequentialDefaultExecutorBuilder Default(Func<Task<PipeResult>> executor);
+        IAsyncSequentialDefaultExecutorBuilder Default(Func<Task<PipeResult>> executor, bool addif);
+        IAsyncSequentialDefaultExecutorBuilder Default(Func<IPipeCache, Task<PipeResult>> executor);
+        IAsyncSequentialDefaultExecutorBuilder Default(Func<IPipeCache, Task<PipeResult>> executor, bool addif);
+        IAsyncSequentialDefaultExecutorBuilder Default(Func<PipeResult> executor);
+        IAsyncSequentialDefaultExecutorBuilder Default(Func<PipeResult> executor, bool addif);
+        IAsyncSequentialDefaultExecutorBuilder Default(Func<IPipeCache, PipeResult> executor);
+        IAsyncSequentialDefaultExecutorBuilder Default(Func<IPipeCache, PipeResult> executor, bool addif);
     }
 }

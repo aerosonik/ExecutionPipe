@@ -9,7 +9,8 @@ using NSV.ExecutionPipe.Pipes.Async.Parallel;
 namespace NSV.ExecutionPipe.Builders.Async.Parallel
 {
     internal class AsyncParallelPipeBuilder<M, R> : 
-        IAsyncParallelPipeBuilder<M, R>
+        IAsyncParallelPipeBuilder<M, R>,
+        IAsynPipeBuilder<M, R>
     {
         private readonly AsyncParallelContainerBuilder<M, R> _containerBuilder;
         private readonly AsyncConditionalQueueBuilder<M, R> _queueBuilder;
@@ -136,7 +137,125 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
 
             return _containerBuilder.Executor(executor);
         }
-#endregion
+        #endregion
+
+        #region Default
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelPipeBuilder<M, R>.Default(
+            IAsyncExecutor<M, R> executor)
+        {
+            if (!_queueBuilder.IfConstantConditions())
+                return _containerBuilder.DefaultSkip();
+
+            return _containerBuilder.Default(() => executor);
+        }
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelPipeBuilder<M, R>.Default(
+            IAsyncExecutor<M, R> executor,
+            bool addif)
+        {
+            if (!_queueBuilder.IfConstantConditions() || !addif)
+                return _containerBuilder.DefaultSkip();
+
+            return _containerBuilder.Default(() => executor);
+        }
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelPipeBuilder<M, R>.Default(
+            Func<IAsyncExecutor<M, R>> executor)
+        {
+            if (!_queueBuilder.IfConstantConditions())
+                return _containerBuilder.DefaultSkip();
+
+            return _containerBuilder.Default(executor);
+        }
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelPipeBuilder<M, R>.Default(
+            Func<IAsyncExecutor<M, R>> executor,
+            bool addif)
+        {
+            if (!_queueBuilder.IfConstantConditions() || !addif)
+                return _containerBuilder.DefaultSkip();
+
+            return _containerBuilder.Default(executor);
+        }
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelPipeBuilder<M, R>.Default(
+            Func<M, Task<PipeResult<R>>> executor)
+        {
+            if (!_queueBuilder.IfConstantConditions())
+                return _containerBuilder.DefaultSkip();
+
+            return _containerBuilder.Default(executor);
+        }
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelPipeBuilder<M, R>.Default(
+            Func<M, Task<PipeResult<R>>> executor,
+            bool addif)
+        {
+            if (!_queueBuilder.IfConstantConditions() || !addif)
+                return _containerBuilder.DefaultSkip();
+
+            return _containerBuilder.Default(executor);
+        }
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelPipeBuilder<M, R>.Default(
+            Func<M, IPipeCache, Task<PipeResult<R>>> executor)
+        {
+            if (!_queueBuilder.IfConstantConditions())
+                return _containerBuilder.DefaultSkip();
+
+            return _containerBuilder.Default(executor);
+        }
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelPipeBuilder<M, R>.Default(
+            Func<M, IPipeCache, Task<PipeResult<R>>> executor,
+            bool addif)
+        {
+            if (!_queueBuilder.IfConstantConditions() || !addif)
+                return _containerBuilder.DefaultSkip();
+
+            return _containerBuilder.Default(executor);
+        }
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelPipeBuilder<M, R>.Default(
+            Func<M, PipeResult<R>> executor)
+        {
+            if (!_queueBuilder.IfConstantConditions())
+                return _containerBuilder.DefaultSkip();
+
+            return _containerBuilder.Default(executor);
+        }
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelPipeBuilder<M, R>.Default(
+            Func<M, PipeResult<R>> executor,
+            bool addif)
+        {
+            if (!_queueBuilder.IfConstantConditions() || !addif)
+                return _containerBuilder.DefaultSkip();
+
+            return _containerBuilder.Default(executor);
+        }
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelPipeBuilder<M, R>.Default(
+            Func<M, IPipeCache, PipeResult<R>> executor)
+        {
+            if (!_queueBuilder.IfConstantConditions())
+                return _containerBuilder.DefaultSkip();
+
+            return _containerBuilder.Default(executor);
+        }
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelPipeBuilder<M, R>.Default(
+            Func<M, IPipeCache, PipeResult<R>> executor,
+            bool addif)
+        {
+            if (!_queueBuilder.IfConstantConditions() || !addif)
+                return _containerBuilder.DefaultSkip();
+
+            return _containerBuilder.Default(executor);
+        }
+
+        #endregion
 
         IAsyncParallelPipeBuilder<M, R> IAsyncParallelPipeBuilder<M, R>.Cache(
             bool threadSafe)
@@ -170,11 +289,9 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
         }
 
         IAsyncPipe<M, R> IAsyncParallelPipeBuilder<M, R>.Return(
-            Func<M, PipeResult<R>[], PipeResult<R>> rersultHandler)
+            Func<M, PipeResult<R>[], PipeResult<R>> handler)
         {
-            _pipe.SetExecutors(_queueBuilder.GetQueue());
-            _pipe.SetReturn(rersultHandler);
-            return (IAsyncPipe<M, R>)_pipe;
+            return ReturnFunc(handler);
         }
 
         IAsyncParallelPipeBuilder<M, R> IAsyncParallelPipeBuilder<M, R>.StopWatch(
@@ -184,6 +301,20 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
                 _pipe.SetStopWatch();
 
             return this;
+        }
+
+        IAsyncPipe<M, R> IAsynPipeBuilder<M, R>.Return(
+            Func<M, PipeResult<R>[], PipeResult<R>> handler)
+        {
+            return ReturnFunc(handler);
+        }
+
+        private IAsyncPipe<M, R> ReturnFunc(
+            Func<M, PipeResult<R>[], PipeResult<R>> handler)
+        {
+            _pipe.SetExecutors(_queueBuilder.GetQueue(), _queueBuilder.GetDefault());
+            _pipe.SetReturn(handler);
+            return (IAsyncPipe<M, R>)_pipe;
         }
     }
 }

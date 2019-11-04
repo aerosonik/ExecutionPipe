@@ -3,8 +3,6 @@ using NSV.ExecutionPipe.Executors;
 using NSV.ExecutionPipe.Models;
 using NSV.ExecutionPipe.Pipes;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace NSV.ExecutionPipe.Builders.Async.Parallel
@@ -32,6 +30,19 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
         IAsyncParallelPipeBuilder<M, R> EndIf();
 
         IAsyncPipe<M, R> Return(Func<M, PipeResult<R>[], PipeResult<R>> rersultHandler);
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> Default(IAsyncExecutor<M, R> executor);
+        IAsyncParallelDefaultExecutorBuilder<M, R> Default(IAsyncExecutor<M, R> executor, bool addif);
+        IAsyncParallelDefaultExecutorBuilder<M, R> Default(Func<IAsyncExecutor<M, R>> executor);
+        IAsyncParallelDefaultExecutorBuilder<M, R> Default(Func<IAsyncExecutor<M, R>> executor, bool addif);
+        IAsyncParallelDefaultExecutorBuilder<M, R> Default(Func<M, Task<PipeResult<R>>> executor);
+        IAsyncParallelDefaultExecutorBuilder<M, R> Default(Func<M, Task<PipeResult<R>>> executor, bool addif);
+        IAsyncParallelDefaultExecutorBuilder<M, R> Default(Func<M, IPipeCache, Task<PipeResult<R>>> executor);
+        IAsyncParallelDefaultExecutorBuilder<M, R> Default(Func<M, IPipeCache, Task<PipeResult<R>>> executor, bool addif);
+        IAsyncParallelDefaultExecutorBuilder<M, R> Default(Func<M, PipeResult<R>> executor);
+        IAsyncParallelDefaultExecutorBuilder<M, R> Default(Func<M, PipeResult<R>> executor, bool addif);
+        IAsyncParallelDefaultExecutorBuilder<M, R> Default(Func<M, IPipeCache, PipeResult<R>> executor);
+        IAsyncParallelDefaultExecutorBuilder<M, R> Default(Func<M, IPipeCache, PipeResult<R>> executor, bool addif);
     }
 
     public interface IAsyncParallelPipeBuilder<M>

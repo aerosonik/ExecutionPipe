@@ -23,14 +23,26 @@ namespace NSV.ExecutionPipe.Pipes.Async.Sequential
                 {
                     if (result.Success == ExecutionResult.Successful &&
                         settings.OkReturn.HasValue)
-                        return settings.OkReturn.Value(model, result);
-
+                    {
+                        _results.Add(settings.OkReturn.Value(model, result));
+                        break;
+                    }
                     if (result.Success == ExecutionResult.Failed &&
                         settings.FailedReturn.HasValue)
-                        return settings.FailedReturn.Value(model, result);
-
+                    {
+                        _results.Add(settings.FailedReturn.Value(model, result));
+                        break;
+                    }
                     break;
                 }
+            }
+
+            if (DefaultExecutor.HasValue &&
+                IfConditions(DefaultExecutor.Value.Settings, model))
+            {
+                var defaultResult = await DefaultExecutor.Value
+                    .Container.RunAsync(model, Cache);
+                _results.Add(defaultResult);
             }
 
             return _results.Any()

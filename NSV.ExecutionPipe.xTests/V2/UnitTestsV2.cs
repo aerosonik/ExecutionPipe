@@ -17,11 +17,21 @@ namespace NSV.ExecutionPipe.xTests.V2
             var pipe = PipeBuilder
                 .AsyncPipe<int, bool>()
                 .Cache(false)
-                .Executor(x => { x = +1; return PipeResult<bool>.DefaultSuccessful.SetValue(true); })
+                .Executor(x => 
+                    { 
+                        x = +1; 
+                        return PipeResult<bool>
+                            .DefaultSuccessful.SetValue(true); 
+                    })
                     .Label("FirstExecutor")
                     .Add()
                 .If(x => x > 0)
-                    .Executor(x => { x = -1; return PipeResult<bool>.DefaultSuccessful.SetValue(true); })
+                    .Executor(x => 
+                        { 
+                            x = -1; 
+                            return PipeResult<bool>
+                                .DefaultSuccessful.SetValue(true); 
+                        })
                         .Restricted(0,10, "SecondExecutor")
                         .StopWatch()
                         .ExecuteIf(x => x >1)
@@ -32,6 +42,14 @@ namespace NSV.ExecutionPipe.xTests.V2
                             .Return((m,r) => r).Set()
                         .Add()
                 .EndIf()
+                .Default(x =>
+                    {
+                        x += 100;
+                        return PipeResult<bool>
+                            .DefaultSuccessful.SetValue(true);
+                    })
+                    .Label("Default")
+                    .Add()
                 .Return((model, results) => results.Last());
 
             Assert.IsAssignableFrom<IAsyncPipe<int, bool>>(pipe);

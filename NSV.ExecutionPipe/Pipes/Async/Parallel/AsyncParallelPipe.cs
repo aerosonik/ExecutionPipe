@@ -1,4 +1,5 @@
 ﻿using NSV.ExecutionPipe.Models;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -18,8 +19,16 @@ namespace NSV.ExecutionPipe.Pipes.Async.Parallel
                       result.Label = x.Settings.Label;
                       return result;
                   });
+            var parallelResults = await Task.WhenAll(results);
+            if (DefaultExecutor.HasValue &&
+                IfConditions(DefaultExecutor.Value.Settings, model))
+            {
+                Array.Resize(ref parallelResults, parallelResults.Length + 1);
+                parallelResults[parallelResults.Length - 1] = await DefaultExecutor
+                    .Value.Container.RunAsync(model, Cache);
+            }
 
-            return _returnHandler(model, await Task.WhenAll(results));
+            return _returnHandler(model, parallelResults);
         }
     }
 }

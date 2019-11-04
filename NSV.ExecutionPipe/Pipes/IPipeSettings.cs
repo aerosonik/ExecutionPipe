@@ -12,10 +12,11 @@ namespace NSV.ExecutionPipe.Pipes
     {
         void SetCache(Func<IPipeCache> cache);
 
-        void SetExecutors(Queue<(
-            ExecutorSettings<M, R> Settings, 
-            IAsyncContainer<M, R> Container
-            )> queue);
+        void SetExecutors(
+            Queue<(ExecutorSettings<M, R> Settings, 
+            IAsyncContainer<M, R> Container)> queue,
+            Optional<(ExecutorSettings<M, R> Settings,
+                IAsyncContainer<M, R> Container)> defaultExecutor);
 
         void SetReturn(Func<M, PipeResult<R>[], PipeResult<R>> handler);
 

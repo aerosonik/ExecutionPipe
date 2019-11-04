@@ -3,7 +3,6 @@ using NSV.ExecutionPipe.Containers.Async;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace NSV.ExecutionPipe.Builders.Async
 {
@@ -13,6 +12,8 @@ namespace NSV.ExecutionPipe.Builders.Async
                 = Optional<Stack<(Optional<Func<M, bool>> calculated, Optional<bool> constant)>>.Default;
         private readonly Queue<(ExecutorSettings<M, R> Settings, IAsyncContainer<M, R> Container)> _queue 
             = new Queue<(ExecutorSettings<M, R> Settings, IAsyncContainer<M, R> Container)>();
+        private Optional<(ExecutorSettings<M, R> Settings, IAsyncContainer<M, R> Container)> _defaultExecutor
+            = Optional<(ExecutorSettings<M, R> Settings, IAsyncContainer<M, R> Container)>.Default;
 
         internal void AddIfCondition(bool condition)
         {
@@ -69,6 +70,18 @@ namespace NSV.ExecutionPipe.Builders.Async
             IAsyncContainer<M, R> Container)
         {
             _queue.Enqueue((Settings, Container));
+        }
+
+        internal void SetDefault(
+            ExecutorSettings<M, R> Settings,
+            IAsyncContainer<M, R> Container)
+        {
+            _defaultExecutor = new Optional<(ExecutorSettings<M, R> Settings, 
+                IAsyncContainer<M, R> Container)>((Settings, Container));
+        }
+        internal Optional<(ExecutorSettings<M, R> Settings, IAsyncContainer<M, R> Container)> GetDefault()
+        {
+            return _defaultExecutor;
         }
 
         internal Queue<(ExecutorSettings<M, R> Settings, IAsyncContainer<M, R> Container)> GetQueue()

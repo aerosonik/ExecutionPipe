@@ -37,7 +37,8 @@ namespace NSV.ExecutionPipe.Pipes
             ExecutorSettings<M, R> Settings,
             IAsyncContainer<M, R> Container
             )> _queue;
-
+        protected Optional<(ExecutorSettings<M, R> Settings,
+                IAsyncContainer<M, R> Container)> DefaultExecutor;
         #region IPipeSettings<M, R>
 
         void IPipeSettings<M, R>.SetCache(Func<IPipeCache> cache)
@@ -47,9 +48,12 @@ namespace NSV.ExecutionPipe.Pipes
 
         void IPipeSettings<M, R>.SetExecutors(Queue<(
             ExecutorSettings<M, R> Settings,
-            IAsyncContainer<M, R> Container)> queue)
+            IAsyncContainer<M, R> Container)> queue,
+            Optional<(ExecutorSettings<M, R> Settings, 
+                IAsyncContainer<M, R> Container)> defaultExecutor)
         {
             _queue = queue;
+            DefaultExecutor = defaultExecutor;
         }
 
         void IPipeSettings<M, R>.SetReturn(Func<M, PipeResult<R>[], PipeResult<R>> handler)

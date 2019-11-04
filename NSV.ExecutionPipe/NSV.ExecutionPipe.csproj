@@ -17,7 +17,6 @@
     <Copyright>aerosonik@nsv 2019</Copyright>
     <PackageProjectUrl>https://github.com/aerosonik/ExecutionPipe</PackageProjectUrl>
     <RepositoryUrl>https://github.com/aerosonik/ExecutionPipe</RepositoryUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/aerosonik/ValidationPipe/f5997cdfaff661d36939c45823e93bb613a3767d/icon.png</PackageIconUrl>
     <PackageTags>Pipe</PackageTags>
   </PropertyGroup>
 

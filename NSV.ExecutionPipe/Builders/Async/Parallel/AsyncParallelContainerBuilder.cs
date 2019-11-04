@@ -11,14 +11,15 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
 {
     internal class AsyncParallelContainerBuilder<M, R> :
         IAsyncParallelExecutorBuilder<M, R>,
-        IAsyncParallelExecutorFailBuilder<M, R>
+        IAsyncParallelExecutorFailBuilder<M, R>,
+        IAsyncParallelDefaultExecutorBuilder<M, R>
     {
         #region Private Fields
-        private readonly IAsyncParallelPipeBuilder<M, R> _asyncPipeBuilder;
+        private readonly AsyncParallelPipeBuilder<M, R> _asyncPipeBuilder;
         private ExecutorSettings<M, R> _currentExecutorSettings;
         private IAsyncContainer<M, R> _currentContainer;
         private bool _skipCurrentExecutor = false;
-        private AsyncConditionalQueueBuilder<M, R> _conditionalQueueBuilder;
+        private readonly AsyncConditionalQueueBuilder<M, R> _conditionalQueueBuilder;
         #endregion
 
         #region C-tor
@@ -34,65 +35,86 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
         #region Set Executor
         public IAsyncParallelExecutorBuilder<M, R> ExecutorSkip()
         {
-            _skipCurrentExecutor = true;
+            SetExecutorSkip();
             return this;
         }
 
         public IAsyncParallelExecutorBuilder<M, R> Executor(
             Func<IAsyncExecutor<M, R>> executor)
         {
-            _currentContainer = new AsyncExecutorContainer<M, R>(executor);
-            _currentExecutorSettings = new ExecutorSettings<M, R>();
+            SetExecutor(executor);
             return this;
         }
         public IAsyncParallelExecutorBuilder<M, R> Executor(
             Func<M, Task<PipeResult<R>>> executor)
         {
-            _currentContainer = new AsyncFuncContainer<M, R>(executor);
-            _currentExecutorSettings = new ExecutorSettings<M, R>();
+            SetExecutor(executor);
             return this;
         }
         public IAsyncParallelExecutorBuilder<M, R> Executor(
             Func<M, IPipeCache, Task<PipeResult<R>>> executor)
         {
-            _currentContainer = new AsyncFuncCacheContainer<M, R>(executor);
-            _currentExecutorSettings = new ExecutorSettings<M, R>();
+            SetExecutor(executor);
             return this;
         }
         public IAsyncParallelExecutorBuilder<M, R> Executor(
             Func<M, PipeResult<R>> executor)
         {
-            _currentContainer = new AsyncFuncContainer<M, R>(executor);
-            _currentExecutorSettings = new ExecutorSettings<M, R>();
+            SetExecutor(executor);
             return this;
         }
         public IAsyncParallelExecutorBuilder<M, R> Executor(
             Func<M, IPipeCache, PipeResult<R>> executor)
         {
-            _currentContainer = new AsyncFuncCacheContainer<M, R>(executor);
-            _currentExecutorSettings = new ExecutorSettings<M, R>();
+            SetExecutor(executor);
             return this;
         }
+        #endregion
+
+        #region Set Default Executor
+
+        public IAsyncParallelDefaultExecutorBuilder<M, R> DefaultSkip()
+        {
+            SetExecutorSkip();
+            return this;
+        }
+        public IAsyncParallelDefaultExecutorBuilder<M, R> Default(
+            Func<IAsyncExecutor<M, R>> executor)
+        {
+            SetExecutor(executor);
+            return this;
+        }
+        public IAsyncParallelDefaultExecutorBuilder<M, R> Default(
+            Func<M, Task<PipeResult<R>>> executor)
+        {
+            SetExecutor(executor);
+            return this;
+        }
+        public IAsyncParallelDefaultExecutorBuilder<M, R> Default(
+            Func<M, IPipeCache, Task<PipeResult<R>>> executor)
+        {
+            SetExecutor(executor);
+            return this;
+        }
+        public IAsyncParallelDefaultExecutorBuilder<M, R> Default(
+            Func<M, PipeResult<R>> executor)
+        {
+            SetExecutor(executor);
+            return this;
+        }
+        public IAsyncParallelDefaultExecutorBuilder<M, R> Default(
+            Func<M, IPipeCache, PipeResult<R>> executor)
+        {
+            SetExecutor(executor);
+            return this;
+        }
+
         #endregion
 
         #region IAsyncParallelExecutorBuilder<M, R>
         IAsyncParallelPipeBuilder<M, R> IAsyncParallelExecutorBuilder<M, R>.Add()
         {
-            if (_skipCurrentExecutor)
-                return _asyncPipeBuilder;
-
-            _currentExecutorSettings
-                .ExecuteConditions = _conditionalQueueBuilder.GetFuncIfConditions();
-
-            _conditionalQueueBuilder.Enque(
-                _currentExecutorSettings,
-                _currentContainer);
-
-            _skipCurrentExecutor = false;
-            _currentContainer = null;
-            _currentExecutorSettings = null;
-
-            return _asyncPipeBuilder;
+            return Add();
         }
         IAsyncParallelExecutorBuilder<M, R> IAsyncParallelExecutorBuilder<M, R>.ExecuteIf(
             Func<M, bool> condition)
@@ -112,10 +134,7 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
         IAsyncParallelExecutorBuilder<M, R> IAsyncParallelExecutorBuilder<M, R>.Label(
             string label)
         {
-            if (_skipCurrentExecutor)
-                return this;
-
-            _currentExecutorSettings.Label = label;
+            Label(label);
             return this;
         }
 
@@ -124,11 +143,7 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
             int maxCount, 
             string key)
         {
-            if (_skipCurrentExecutor)
-                return this;
-
-            PipeManager.SetSemaphore(minCount, maxCount, key);
-            _currentContainer = new AsyncSemaphoreContainer<M, R>(_currentContainer, key);
+            Restricted(minCount, maxCount, key);
             return this;
         }
 
@@ -138,30 +153,20 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
             int maxCount, 
             string key)
         {
-            if (_skipCurrentExecutor || !condition)
-                return this;
-
-            PipeManager.SetSemaphore(minCount, maxCount, key);
-            _currentContainer = new AsyncSemaphoreContainer<M, R>(_currentContainer, key);
+            Restricted(condition, minCount, maxCount, key);
             return this;
         }
 
         IAsyncParallelExecutorBuilder<M, R> IAsyncParallelExecutorBuilder<M, R>.StopWatch()
         {
-            if (_skipCurrentExecutor)
-                return this;
-
-            _currentContainer = new AsyncStopWatchContainer<M, R>(_currentContainer);
+            StopWatch();
             return this;
         }
 
         IAsyncParallelExecutorBuilder<M, R> IAsyncParallelExecutorBuilder<M, R>.StopWatch(
             bool condition)
         {
-            if (_skipCurrentExecutor || !condition)
-                return this;
-
-            _currentContainer = new AsyncStopWatchContainer<M, R>(_currentContainer);
+            StopWatch(condition);
             return this;
         }
 
@@ -169,14 +174,12 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
         #endregion
 
         #region IAsyncParallelExecutorFailBuilder<M, R>
+
         IAsyncParallelExecutorFailBuilder<M, R> IAsyncParallelExecutorFailBuilder<M, R>.Retry(
             int count, 
             int timeOutMilliseconds)
         {
-            if (_skipCurrentExecutor)
-                return this;
-
-            _currentContainer = new AsyncReTryContainer<M, R>(_currentContainer, count, timeOutMilliseconds);
+            Retry(count, timeOutMilliseconds);
             return this;
         }
 
@@ -185,10 +188,7 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
             int count, 
             int timeOutMilliseconds)
         {
-            if (_skipCurrentExecutor || !condition)
-                return this;
-
-            _currentContainer = new AsyncReTryContainer<M, R>(_currentContainer, count, timeOutMilliseconds);
+            Retry(count, timeOutMilliseconds);
             return this;
         }
 
@@ -196,6 +196,209 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
         {
             return this;
         }
+
+        #endregion
+
+        #region  IAsyncParallelDefaultExecutorBuilder<M, R>
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelDefaultExecutorBuilder<M, R>.Retry(
+            int count, 
+            int timeOutMilliseconds)
+        {
+            Retry(count, timeOutMilliseconds);
+            return this;
+        }
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelDefaultExecutorBuilder<M, R>.Retry(
+            bool condition, 
+            int count, 
+            int timeOutMilliseconds)
+        {
+            Retry(condition, count, timeOutMilliseconds);
+            return this;
+        }
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelDefaultExecutorBuilder<M, R>.StopWatch()
+        {
+            StopWatch();
+            return this;
+        }
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelDefaultExecutorBuilder<M, R>.StopWatch(
+            bool condition)
+        {
+            StopWatch(condition);
+            return this;
+        }
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelDefaultExecutorBuilder<M, R>.Restricted(
+            int minCount, 
+            int maxCount, 
+            string key)
+        {
+            Restricted(minCount, maxCount, key);
+            return this;
+        }
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelDefaultExecutorBuilder<M, R>.Restricted(
+            bool condition, 
+            int minCount, 
+            int maxCount, 
+            string key)
+        {
+            Restricted(condition, minCount, maxCount, key);
+            return this;
+        }
+
+        IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelDefaultExecutorBuilder<M, R>.Label(
+            string label)
+        {
+            Label(label);
+            return this;
+        }
+
+        IAsynPipeBuilder<M, R> IAsyncParallelDefaultExecutorBuilder<M, R>.Add()
+        {
+            return Add(true);
+        }
+
+        #endregion
+
+        #region private
+
+        private void SetExecutorSkip()
+        {
+            _skipCurrentExecutor = true;
+        }
+
+        private void SetExecutor(
+            Func<IAsyncExecutor<M, R>> executor)
+        {
+            _currentContainer = new AsyncExecutorContainer<M, R>(executor);
+            _currentExecutorSettings = new ExecutorSettings<M, R>();
+        }
+        private void SetExecutor(
+            Func<M, Task<PipeResult<R>>> executor)
+        {
+            _currentContainer = new AsyncFuncContainer<M, R>(executor);
+            _currentExecutorSettings = new ExecutorSettings<M, R>();
+        }
+        private void SetExecutor(
+            Func<M, IPipeCache, Task<PipeResult<R>>> executor)
+        {
+            _currentContainer = new AsyncFuncCacheContainer<M, R>(executor);
+            _currentExecutorSettings = new ExecutorSettings<M, R>();
+        }
+        private void SetExecutor(
+            Func<M, PipeResult<R>> executor)
+        {
+            _currentContainer = new AsyncFuncContainer<M, R>(executor);
+            _currentExecutorSettings = new ExecutorSettings<M, R>();
+        }
+        private void SetExecutor(
+            Func<M, IPipeCache, PipeResult<R>> executor)
+        {
+            _currentContainer = new AsyncFuncCacheContainer<M, R>(executor);
+            _currentExecutorSettings = new ExecutorSettings<M, R>();
+        }
+
+
+        private void Retry(
+            int count, 
+            int timeOutMilliseconds)
+        {
+            if (_skipCurrentExecutor)
+                return;
+
+            _currentContainer = new AsyncReTryContainer<M, R>(_currentContainer, count, timeOutMilliseconds);
+        }
+
+        private void Retry(
+            bool condition, 
+            int count, 
+            int timeOutMilliseconds)
+        {
+            if (_skipCurrentExecutor || !condition)
+                return;
+
+            _currentContainer = new AsyncReTryContainer<M, R>(_currentContainer, count, timeOutMilliseconds);
+        }
+
+        private void StopWatch()
+        {
+            if (_skipCurrentExecutor)
+                return;
+
+            _currentContainer = new AsyncStopWatchContainer<M, R>(_currentContainer);
+        }
+
+        private void StopWatch(
+            bool condition)
+        {
+            if (_skipCurrentExecutor || !condition)
+                return;
+
+            _currentContainer = new AsyncStopWatchContainer<M, R>(_currentContainer);
+        }
+
+        private void Restricted(
+            bool condition, 
+            int minCount, 
+            int maxCount, 
+            string key)
+        {
+            if (_skipCurrentExecutor || !condition)
+                return;
+
+            PipeManager.SetSemaphore(minCount, maxCount, key);
+            _currentContainer = new AsyncSemaphoreContainer<M, R>(_currentContainer, key);
+        }
+
+        private void Restricted(
+            int minCount, 
+            int maxCount, 
+            string key)
+        {
+            if (_skipCurrentExecutor)
+                return;
+
+            PipeManager.SetSemaphore(minCount, maxCount, key);
+            _currentContainer = new AsyncSemaphoreContainer<M, R>(_currentContainer, key);
+        }
+
+
+        private void Label(string label)
+        {
+            if (_skipCurrentExecutor)
+                return;
+
+            _currentExecutorSettings.Label = label;
+        }
+
+        private AsyncParallelPipeBuilder<M, R> Add(bool defaultExecutor = false)
+        {
+            if (_skipCurrentExecutor)
+                return _asyncPipeBuilder;
+
+            _currentExecutorSettings
+                .ExecuteConditions = _conditionalQueueBuilder.GetFuncIfConditions();
+
+            if (defaultExecutor)
+                _conditionalQueueBuilder.SetDefault(
+                    _currentExecutorSettings,
+                    _currentContainer);
+            else
+                _conditionalQueueBuilder.Enque(
+                    _currentExecutorSettings,
+                    _currentContainer);
+
+            _skipCurrentExecutor = false;
+            _currentContainer = null;
+            _currentExecutorSettings = null;
+
+            return _asyncPipeBuilder;
+        }
+
         #endregion
     }
 }
