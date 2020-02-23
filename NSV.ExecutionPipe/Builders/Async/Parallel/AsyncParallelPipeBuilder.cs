@@ -9,17 +9,14 @@ using NSV.ExecutionPipe.Pipes.Async.Parallel;
 namespace NSV.ExecutionPipe.Builders.Async.Parallel
 {
     internal class AsyncParallelPipeBuilder<M, R> : 
-        IAsyncParallelPipeBuilder<M, R>,
-        IAsynPipeBuilder<M, R>
+        AsynPipeBuilder<M, R>,
+        IAsyncParallelPipeBuilder<M, R>
     {
         private readonly AsyncParallelContainerBuilder<M, R> _containerBuilder;
-        private readonly AsyncConditionalQueueBuilder<M, R> _queueBuilder;
-        private readonly IPipeSettings<M, R> _pipe;
 
         public AsyncParallelPipeBuilder()
         {
             _pipe = new AsyncParallelPipe<M, R>();
-            _queueBuilder = new AsyncConditionalQueueBuilder<M, R>();
             _containerBuilder = new AsyncParallelContainerBuilder<M, R>(this, _queueBuilder);
         }
 
@@ -288,14 +285,8 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
             return this;
         }
 
-        IAsyncPipe<M, R> IAsyncParallelPipeBuilder<M, R>.Return(
-            Func<M, PipeResult<R>[], PipeResult<R>> handler)
-        {
-            return ReturnFunc(handler);
-        }
-
         IAsyncParallelPipeBuilder<M, R> IAsyncParallelPipeBuilder<M, R>.StopWatch(
-            bool use)
+           bool use)
         {
             if (use)
                 _pipe.SetStopWatch();
@@ -303,18 +294,10 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
             return this;
         }
 
-        IAsyncPipe<M, R> IAsynPipeBuilder<M, R>.Return(
+        IAsyncPipe<M, R> IAsyncParallelPipeBuilder<M, R>.Return(
             Func<M, PipeResult<R>[], PipeResult<R>> handler)
         {
-            return ReturnFunc(handler);
-        }
-
-        private IAsyncPipe<M, R> ReturnFunc(
-            Func<M, PipeResult<R>[], PipeResult<R>> handler)
-        {
-            _pipe.SetExecutors(_queueBuilder.GetQueue(), _queueBuilder.GetDefault());
-            _pipe.SetReturn(handler);
-            return (IAsyncPipe<M, R>)_pipe;
+            return Return(handler);
         }
     }
 }

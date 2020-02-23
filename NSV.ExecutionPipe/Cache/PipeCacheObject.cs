@@ -56,5 +56,13 @@ namespace NSV.ExecutionPipe.Cache
                 _internalCache.Value.Remove(key);
             }
         }
+
+        void IPipeCache.Clear()
+        {
+            if (_internalCache.HasValue)
+            {
+                _internalCache.Value.Clear();
+            }
+        }
     }
 }

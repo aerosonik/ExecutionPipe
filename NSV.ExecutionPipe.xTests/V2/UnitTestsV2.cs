@@ -18,44 +18,53 @@ namespace NSV.ExecutionPipe.xTests.V2
             var pipe = PipeBuilder
                 .AsyncPipe<int, bool>()
                 .Cache(false)
-                .Executor(x => 
-                    { 
-                        x +=1; 
+                .Executor(x =>
+                    {
+                        x += 1;
                         return PipeResult<bool>
-                            .DefaultSuccessful.SetValue(true); 
+                            .DefaultSuccessful.SetValue(true);
                     })
                     .Label("FirstExecutor")
                     .Add()
                 .If(x => x > 0)
-                    .Executor(x => 
-                        { 
-                            x +=1; 
-                            return PipeResult<bool>
-                                .DefaultSuccessful.SetValue(true); 
-                        })
-                        .Label("SecondExecutor")
-                        //.Restricted(0,10, "SecondExecutor")
-                        //.StopWatch()
-                        //.ExecuteIf(x => x >1)
-                        //.IfFail()
-                        //    .Retry(3,1000).Break(false).Set()
-                        //.IfOk()
-                        //    .Return((m,r) => r).Set()
-                        .Add()
+                    .Executor(x =>
+                         {
+                             x += 1;
+                             return PipeResult<bool>
+                                 .DefaultSuccessful.SetValue(true);
+                         })
+                         .Label("SecondExecutor")
+                         .Restricted(1, 10, "SecondExecutor")
+                         .StopWatch()
+                         .ExecuteIf(x => x > 1)
+                         .IfFail()
+                             .Retry(3, 1000).Break(false).Set()
+                         .IfOk()
+                             .Return((m, r) => r).Set()
+                         .Add()
                 .EndIf()
-                .Default(x =>
+                .Default((x, cache) =>
+                     {
+                         x += 100;
+                         cache.Delete("key");
+                         return PipeResult<bool>
+                             .DefaultSuccessful.SetValue(true);
+                     })
+                     .Label("Default")
+                     .Add()
+                .Return((model, results) => 
                     {
-                        x += 100;
+                        if (model >= 102)
+                            return PipeResult<bool>
+                                .DefaultSuccessful.SetValue(true);
                         return PipeResult<bool>
-                            .DefaultSuccessful.SetValue(true);
-                    })
-                    .Label("Default")
-                    .Add()
-                .Return((model, results) => results.Last());
+                            .DefaultUnSuccessful;
+                    });
 
             Assert.IsAssignableFrom<IAsyncPipe<int, bool>>(pipe);
             var result = await pipe.ExecuteAsync(10);
-            Assert.Equal("Default",result.Label);
+            Assert.True(result.Value);
+            Assert.Equal(ExecutionResult.Successful, result.Success);
         }
     }
 }

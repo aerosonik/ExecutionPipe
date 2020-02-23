@@ -8,9 +8,11 @@ namespace NSV.ExecutionPipe.Pipes.Async.Sequential
     {
         protected override async Task<PipeResult<R>> RunAsync(M model)
         {
-            while (_queue.Count > 0)
+            //while (_queue.Length > 0)
+            //{
+            for(int i = 0; i < _queue.Length; i++)
             {
-                var (settings, container) = _queue.Dequeue();
+                var (settings, container) = _queue[i];//.Dequeue();
                 if (!IfConditions(settings, model))
                     continue;
 

@@ -7,5 +7,7 @@
         void Set<T>(object key, T value);
 
         void Delete(object key);
+
+        void Clear();
     }
 }

@@ -88,5 +88,10 @@ namespace NSV.ExecutionPipe.Builders.Async
         {
             return _queue;
         }
+
+        internal (ExecutorSettings<M, R> Settings, IAsyncContainer<M, R> Container)[] GetArray()
+        {
+            return _queue.ToArray();
+        }
     }
 }

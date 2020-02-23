@@ -33,10 +33,14 @@ namespace NSV.ExecutionPipe.Pipes
 
         protected bool _useStopWatch = false;
 
-        protected Queue<(
+        //protected Queue<(
+        //    ExecutorSettings<M, R> Settings,
+        //    IAsyncContainer<M, R> Container
+        //    )> _queue;
+        protected (
             ExecutorSettings<M, R> Settings,
             IAsyncContainer<M, R> Container
-            )> _queue;
+            )[] _queue;
         protected Optional<(ExecutorSettings<M, R> Settings,
                 IAsyncContainer<M, R> Container)> DefaultExecutor;
         #region IPipeSettings<M, R>
@@ -46,17 +50,28 @@ namespace NSV.ExecutionPipe.Pipes
             _cacheFunc = cache;
         }
 
-        void IPipeSettings<M, R>.SetExecutors(Queue<(
+        //void IPipeSettings<M, R>.SetExecutors(Queue<(
+        //    ExecutorSettings<M, R> Settings,
+        //    IAsyncContainer<M, R> Container)> queue,
+        //    Optional<(ExecutorSettings<M, R> Settings, 
+        //        IAsyncContainer<M, R> Container)> defaultExecutor)
+        //{
+        //    _queue = queue;
+        //    DefaultExecutor = defaultExecutor;
+        //}
+        void IPipeSettings<M, R>.SetExecutors((
             ExecutorSettings<M, R> Settings,
-            IAsyncContainer<M, R> Container)> queue,
-            Optional<(ExecutorSettings<M, R> Settings, 
+            IAsyncContainer<M, R> Container)[] queue,
+            Optional<(ExecutorSettings<M, R> Settings,
                 IAsyncContainer<M, R> Container)> defaultExecutor)
         {
             _queue = queue;
             DefaultExecutor = defaultExecutor;
         }
 
-        void IPipeSettings<M, R>.SetReturn(Func<M, PipeResult<R>[], PipeResult<R>> handler)
+        void IPipeSettings<M, R>.SetReturn(
+            Func<M, PipeResult<R>[], 
+            PipeResult<R>> handler)
         {
             _returnHandler = handler;
         }
