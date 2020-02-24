@@ -302,7 +302,7 @@ namespace NSV.ExecutionPipe.Builders
 
         IAsynPipeBuilder<M, R> IAsyncSequentialDefaultExecutorBuilder<M, R>.Add()
         {
-            return Add();
+            return Add(true);
         }
 
         #endregion
@@ -314,34 +314,49 @@ namespace NSV.ExecutionPipe.Builders
             _skipCurrentExecutor = true;
         }
         private void SetExecutor(
-            Func<IAsyncExecutor<M, R>> executor)
+            Func<IAsyncExecutor<M, R>> executor,
+            bool isDefault = false)
         {
             _currentContainer = new AsyncExecutorContainer<M, R>(executor);
-            _currentExecutorSettings = new ExecutorSettings<M, R>();
+            _currentExecutorSettings = isDefault
+                 ? new ExecutorSettings<M, R> { Label = "Default" }
+                 : new ExecutorSettings<M, R>();
         }
         private void SetExecutor(
-            Func<M, Task<PipeResult<R>>> executor)
+            Func<M, Task<PipeResult<R>>> executor,
+            bool isDefault = false)
         {
             _currentContainer = new AsyncFuncContainer<M, R>(executor);
-            _currentExecutorSettings = new ExecutorSettings<M, R>();
+            _currentExecutorSettings = isDefault
+                ? new ExecutorSettings<M, R> { Label = "Default" }
+                : new ExecutorSettings<M, R>();
         }
         private void SetExecutor(
-            Func<M, IPipeCache, Task<PipeResult<R>>> executor)
+            Func<M, IPipeCache, Task<PipeResult<R>>> executor,
+            bool isDefault = false)
         {
             _currentContainer = new AsyncFuncCacheContainer<M, R>(executor);
-            _currentExecutorSettings = new ExecutorSettings<M, R>();
+            _currentExecutorSettings = isDefault
+                ? new ExecutorSettings<M, R> { Label = "Default" }
+                : new ExecutorSettings<M, R>();
         }
         private void SetExecutor(
-            Func<M, PipeResult<R>> executor)
+            Func<M, PipeResult<R>> executor,
+            bool isDefault = false)
         {
             _currentContainer = new AsyncFuncContainer<M, R>(executor);
-            _currentExecutorSettings = new ExecutorSettings<M, R>();
+            _currentExecutorSettings = isDefault
+                 ? new ExecutorSettings<M, R> { Label = "Default" }
+                 : new ExecutorSettings<M, R>();
         }
         private void SetExecutor(
-            Func<M, IPipeCache, PipeResult<R>> executor)
+            Func<M, IPipeCache, PipeResult<R>> executor,
+            bool isDefault = false)
         {
             _currentContainer = new AsyncFuncCacheContainer<M, R>(executor);
-            _currentExecutorSettings = new ExecutorSettings<M, R>();
+            _currentExecutorSettings = isDefault
+                 ? new ExecutorSettings<M, R> { Label = "Default" }
+                 : new ExecutorSettings<M, R>();
         }
 
         private void Retry(

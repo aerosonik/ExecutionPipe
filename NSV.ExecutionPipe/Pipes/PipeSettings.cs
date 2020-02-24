@@ -24,7 +24,7 @@ namespace NSV.ExecutionPipe.Pipes
                 _cacheObject = value;
             }
         }
-        protected Func<IPipeCache> _cacheFunc;
+        protected Func<IPipeCache> _cacheFunc = () => null;
         protected IPipeCache _cacheObject;
 
         protected List<PipeResult<R>> _results = new List<PipeResult<R>>();
@@ -33,10 +33,6 @@ namespace NSV.ExecutionPipe.Pipes
 
         protected bool _useStopWatch = false;
 
-        //protected Queue<(
-        //    ExecutorSettings<M, R> Settings,
-        //    IAsyncContainer<M, R> Container
-        //    )> _queue;
         protected (
             ExecutorSettings<M, R> Settings,
             IAsyncContainer<M, R> Container
@@ -50,15 +46,6 @@ namespace NSV.ExecutionPipe.Pipes
             _cacheFunc = cache;
         }
 
-        //void IPipeSettings<M, R>.SetExecutors(Queue<(
-        //    ExecutorSettings<M, R> Settings,
-        //    IAsyncContainer<M, R> Container)> queue,
-        //    Optional<(ExecutorSettings<M, R> Settings, 
-        //        IAsyncContainer<M, R> Container)> defaultExecutor)
-        //{
-        //    _queue = queue;
-        //    DefaultExecutor = defaultExecutor;
-        //}
         void IPipeSettings<M, R>.SetExecutors((
             ExecutorSettings<M, R> Settings,
             IAsyncContainer<M, R> Container)[] queue,
