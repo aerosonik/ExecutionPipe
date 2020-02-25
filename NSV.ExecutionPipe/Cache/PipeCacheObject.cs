@@ -49,6 +49,17 @@ namespace NSV.ExecutionPipe.Cache
                 _internalCache.Value.Add(key, value);
             }
         }
+        void IPipeCache.SetOrUpdate<T>(object key, T value)
+        {
+            if (_internalCache.HasValue)
+            {
+                if (_internalCache.Value.ContainsKey(key))
+                {
+                    _internalCache.Value.Remove(key);
+                }
+                _internalCache.Value.Add(key, value);
+            }
+        }
         void IPipeCache.Delete(object key)
         {
             if (_internalCache.HasValue)
