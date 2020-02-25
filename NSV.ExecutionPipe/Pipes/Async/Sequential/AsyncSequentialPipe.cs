@@ -42,6 +42,8 @@ namespace NSV.ExecutionPipe.Pipes.Async.Sequential
             {
                 var defaultResult = await DefaultExecutor.Value
                     .Container.RunAsync(model, Cache);
+                defaultResult.SetLabel(DefaultExecutor.Value.Settings.Label);
+
                 _results.Add(defaultResult);
             }
 

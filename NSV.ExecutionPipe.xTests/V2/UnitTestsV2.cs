@@ -82,7 +82,7 @@ namespace NSV.ExecutionPipe.xTests.V2
                 .AsyncPipe<IntModel, int>()
                 .Executor(execIncOne).Label("exec_1").Add()
                 .Executor(execIncTwo, true).Label("exec_2").Add()
-                //.Executor(execIncTwo1, false).Label("exec_21").Add() // not in pipe
+                .Executor(execIncTwo1, false).Label("exec_21").Add() // not in pipe
                 .Executor(funcExecIncOne).Label("exec_3").Add()
                 .Executor(funcExecIncTwo, true).Label("exec_4").Add()
                 .Executor(async (model) =>
@@ -102,20 +102,20 @@ namespace NSV.ExecutionPipe.xTests.V2
                      }).Label("exec_6").Add()
                 .Default(funcDefault).Add()
                 .Return((model, results) =>
-                {
-                    if (results.Length < 5)
-                        return PipeResult<int>
-                            .DefaultUnSuccessful
-                            .SetValue(model.Integer);
-                    if (results.Sum(x => x.Value) >= 136)
-                        return PipeResult<int>
-                            .DefaultUnSuccessful
-                            .SetValue(model.Integer);
+                    {
+                        if (results.Length < 7)
+                            return PipeResult<int>
+                                .DefaultUnSuccessful
+                                .SetValue(model.Integer);
+                        if (results.Sum(x => x.Value) < 136)
+                            return PipeResult<int>
+                                .DefaultUnSuccessful
+                                .SetValue(model.Integer);
 
-                    return PipeResult<int>
-                        .DefaultSuccessful
-                        .SetValue(model.Integer);
-                });
+                        return PipeResult<int>
+                            .DefaultSuccessful
+                            .SetValue(model.Integer);
+                    });
 
             var integer = new IntModel { Integer = 10 };
             var result = await pipe.ExecuteAsync(integer);

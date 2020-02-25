@@ -83,31 +83,31 @@ namespace NSV.ExecutionPipe.Builders
         public IAsyncSequentialDefaultExecutorBuilder<M, R> Default(
             Func<IAsyncExecutor<M, R>> executor)
         {
-            SetExecutor(executor);
+            SetExecutor(executor, true);
             return this;
         }
         public IAsyncSequentialDefaultExecutorBuilder<M, R> Default(
             Func<M, Task<PipeResult<R>>> executor)
         {
-            SetExecutor(executor);
+            SetExecutor(executor, true);
             return this;
         }
         public IAsyncSequentialDefaultExecutorBuilder<M, R> Default(
             Func<M, IPipeCache, Task<PipeResult<R>>> executor)
         {
-            SetExecutor(executor);
+            SetExecutor(executor, true);
             return this;
         }
         public IAsyncSequentialDefaultExecutorBuilder<M, R> Default(
             Func<M, PipeResult<R>> executor)
         {
-            SetExecutor(executor);
+            SetExecutor(executor, true);
             return this;
         }
         public IAsyncSequentialDefaultExecutorBuilder<M, R> Default(
             Func<M, IPipeCache, PipeResult<R>> executor)
         {
-            SetExecutor(executor);
+            SetExecutor(executor, true);
             return this;
         }
 
@@ -317,6 +317,7 @@ namespace NSV.ExecutionPipe.Builders
             Func<IAsyncExecutor<M, R>> executor,
             bool isDefault = false)
         {
+            _skipCurrentExecutor = false;
             _currentContainer = new AsyncExecutorContainer<M, R>(executor);
             _currentExecutorSettings = isDefault
                  ? new ExecutorSettings<M, R> { Label = "Default" }
@@ -326,6 +327,7 @@ namespace NSV.ExecutionPipe.Builders
             Func<M, Task<PipeResult<R>>> executor,
             bool isDefault = false)
         {
+            _skipCurrentExecutor = false;
             _currentContainer = new AsyncFuncContainer<M, R>(executor);
             _currentExecutorSettings = isDefault
                 ? new ExecutorSettings<M, R> { Label = "Default" }
@@ -335,6 +337,7 @@ namespace NSV.ExecutionPipe.Builders
             Func<M, IPipeCache, Task<PipeResult<R>>> executor,
             bool isDefault = false)
         {
+            _skipCurrentExecutor = false;
             _currentContainer = new AsyncFuncCacheContainer<M, R>(executor);
             _currentExecutorSettings = isDefault
                 ? new ExecutorSettings<M, R> { Label = "Default" }
@@ -344,6 +347,7 @@ namespace NSV.ExecutionPipe.Builders
             Func<M, PipeResult<R>> executor,
             bool isDefault = false)
         {
+            _skipCurrentExecutor = false;
             _currentContainer = new AsyncFuncContainer<M, R>(executor);
             _currentExecutorSettings = isDefault
                  ? new ExecutorSettings<M, R> { Label = "Default" }
@@ -353,6 +357,7 @@ namespace NSV.ExecutionPipe.Builders
             Func<M, IPipeCache, PipeResult<R>> executor,
             bool isDefault = false)
         {
+            _skipCurrentExecutor = false;
             _currentContainer = new AsyncFuncCacheContainer<M, R>(executor);
             _currentExecutorSettings = isDefault
                  ? new ExecutorSettings<M, R> { Label = "Default" }
