@@ -8,7 +8,7 @@ namespace NSV.ExecutionPipe.Pipes.Async.Sequential
     {
         protected override async Task<PipeResult<R>> RunAsync(M model)
         {
-            for(int i = 0; i < _queue.Length; i++)
+            for (int i = 0; i < _queue.Length; i++)
             {
                 var (settings, container) = _queue[i];
                 if (!IfConditions(settings, model))
@@ -16,8 +16,6 @@ namespace NSV.ExecutionPipe.Pipes.Async.Sequential
 
                 var result = await container.RunAsync(model, Cache);
                 result.Label = settings.Label;
-
-                _results.Add(result);
 
                 if (IfBreak(settings, result))
                 {
@@ -27,14 +25,18 @@ namespace NSV.ExecutionPipe.Pipes.Async.Sequential
                         _results.Add(settings.OkReturn.Value(model, result));
                         break;
                     }
+
                     if (result.Success == ExecutionResult.Failed &&
                         settings.FailedReturn.HasValue)
                     {
                         _results.Add(settings.FailedReturn.Value(model, result));
                         break;
                     }
+
+                    _results.Add(result);
                     break;
                 }
+                _results.Add(result);
             }
 
             if (DefaultExecutor.HasValue &&

@@ -275,59 +275,344 @@ namespace NSV.ExecutionPipe.xTests.V2
             Assert.True(result.Elapsed.TotalMilliseconds > result.Value);
         }
 
-        //public async Task AsyncPipeWithStopWatchAndRetry()
-        //{
-        //    var execIncOne = new IntDelay50Etor();
+        [Fact]
+        public async Task AsyncPipeExecutorBreakAndReturnIfFailedWithDefault()
+        {
+            var execIncOne = new IntModelIncrementOneEtor();
+            var pipe = PipeBuilder
+                .AsyncPipe<IntModel, int>()
+                .Cache(false)
+                .Executor(execIncOne).Label("exec_1").Add()
+                .Executor(async (model, cache) =>
+                    {
+                        model.Integer += 1;
+                        return PipeResult<int>
+                                .DefaultUnSuccessfulBreak
+                                .SetValue(model.Integer);
+                    })
+                    .Label("exec_2")
+                    .IfFail().Break(true).Return((m, r) => r).Set()
+                    .Add()
+                .Executor(async (model, cache) =>
+                    {
+                        model.Integer += 1;
+                        return PipeResult<int>
+                                .DefaultSuccessful
+                                .SetValue(model.Integer);
+                    })
+                    .Label("exec_3")
+                    .Add()
+                .Default((model, cache) =>
+                    {
+                        model.Integer += 1;
+                        return PipeResult<int>
+                               .DefaultSuccessful
+                               .SetValue(model.Integer);
+                    }).Add()
+                .Return((model, results) =>
+                {
+                    if (results.Any(x => x.Label == "Default") && 
+                        !results.Any(x => x.Label == "exec_3") &&
+                        results.Length == 3)
+                        return PipeResult<int>
+                            .DefaultSuccessful
+                            .SetValue(results.Max(x => x.Value.Value));
 
-        //    var pipe = PipeBuilder
-        //        .AsyncPipe<IntModel, double>()
-        //        .Cache(false)
-        //        .StopWatch(true)
-        //        .Executor(execIncOne)
-        //            .Label("exec_1")
-        //            .StopWatch()
-        //            .Add()
-        //        .Executor(async (model, cache) =>
-        //        {
-        //            await Task.Delay(50);
-        //            int count = cache.GetSafely<int>("break_count") + 1;
-        //            cache.SetOrUpdateSafely<int>("break_count", count);
-        //            return PipeResult<double>
-        //                    .DefaultUnSuccessful
-        //                    .SetValue(50);
-        //        })
-        //            .Label("exec_2")
-        //            .IfFail().Retry(3, 100).Set()
-        //            .StopWatch()
-        //            .Add()
-        //        .Default((model, cache) =>
-        //        {
-        //            int count = cache.GetSafely<int>("break_count");
-        //            return PipeResult<double>
-        //                   .DefaultSuccessful
-        //                   .SetValue(count);
-        //        }).Add()
-        //        .Return((model, results) =>
-        //        {
-        //            var sumElapsed = TimeSpan.FromMilliseconds(
-        //                results.Sum(x => x.Elapsed.TotalMilliseconds));
-        //            if (results.FirstOrDefault(x => x.Label == "Default").Value.Value == 4)
-        //                return PipeResult<double>
-        //                    .DefaultSuccessful
-        //                    .SetValue(sumElapsed.TotalMilliseconds);
+                    return PipeResult<int>
+                            .DefaultUnSuccessful
+                            .SetValue(results.Max(x => x.Value.Value));
+                });
 
-        //            return PipeResult<double>
-        //                    .DefaultUnSuccessful
-        //                    .SetValue(sumElapsed.TotalMilliseconds);
-        //        });
+            var result = await pipe.ExecuteAsync(new IntModel { Integer = 0 });
+            Assert.Equal(ExecutionResult.Successful, result.Success);
+            Assert.True(result.Value.Value == 3);
+        }
 
-        //    var integer = new IntModel { Integer = 0 };
-        //    var result = await pipe.ExecuteAsync(integer);
-        //    Assert.Equal(ExecutionResult.Successful, result.Success);
+        [Fact]
+        public async Task AsyncPipeExecutorBreakIfFailedWithDefault()
+        {
+            var execIncOne = new IntModelIncrementOneEtor();
+            var pipe = PipeBuilder
+                .AsyncPipe<IntModel, int>()
+                .Cache(false)
+                .Executor(execIncOne).Label("exec_1").Add()
+                .Executor(async (model, cache) =>
+                    {
+                        model.Integer += 1;
+                        return PipeResult<int>
+                                .DefaultUnSuccessfulBreak
+                                .SetValue(model.Integer);
+                    })
+                    .Label("exec_2")
+                    .IfFail().Break(true).Set()
+                    .Add()
+                .Executor(async (model, cache) =>
+                    {
+                        model.Integer += 1;
+                        return PipeResult<int>
+                                .DefaultSuccessful
+                                .SetValue(model.Integer);
+                    })
+                    .Label("exec_3")
+                    .Add()
+                .Default((model, cache) =>
+                    {
+                        model.Integer += 1;
+                        return PipeResult<int>
+                               .DefaultSuccessful
+                               .SetValue(model.Integer);
+                    }).Add()
+                .Return((model, results) =>
+                    {
+                        if (results.Any(x => x.Label == "Default") &&
+                            !results.Any(x => x.Label == "exec_3") &&
+                            results.Length == 3)
+                            return PipeResult<int>
+                                .DefaultSuccessful
+                                .SetValue(results.Max(x => x.Value.Value));
 
-        //    Assert.True(result.Value > 450);
-        //    Assert.True(result.Elapsed.TotalMilliseconds > result.Value);
-        //}
+                        return PipeResult<int>
+                                .DefaultUnSuccessful
+                                .SetValue(results.Max(x => x.Value.Value));
+                    });
+
+            var result = await pipe.ExecuteAsync(new IntModel { Integer = 0 });
+            Assert.Equal(ExecutionResult.Successful, result.Success);
+            Assert.True(result.Value.Value == 3);
+        }
+
+        [Fact]
+        public async Task AsyncPipeExecutorBreakIfFailed()
+        {
+            var execIncOne = new IntModelIncrementOneEtor();
+            var pipe = PipeBuilder
+                .AsyncPipe<IntModel, int>()
+                .Cache(false)
+                .Executor(execIncOne).Label("exec_1").Add()
+                .Executor(async (model, cache) =>
+                    {
+                        model.Integer += 1;
+                        return PipeResult<int>
+                                .DefaultUnSuccessfulBreak
+                                .SetValue(model.Integer);
+                    })
+                    .Label("exec_2")
+                    .IfFail().Break(true).Set()
+                    .Add()
+                .Executor(async (model, cache) =>
+                    {
+                        model.Integer += 1;
+                        return PipeResult<int>
+                                .DefaultSuccessful
+                                .SetValue(model.Integer);
+                    })
+                    .Label("exec_3")
+                    .Add()
+                .Return((model, results) =>
+                    {
+                        if (!results.Any(x => x.Label == "exec_3") && 
+                            results.Length == 2)
+                            return PipeResult<int>
+                                .DefaultSuccessful
+                                .SetValue(results.Max(x => x.Value.Value));
+
+                        return PipeResult<int>
+                                .DefaultUnSuccessful
+                                .SetValue(results.Max(x => x.Value.Value));
+                    });
+
+            var result = await pipe.ExecuteAsync(new IntModel { Integer = 0 });
+            Assert.Equal(ExecutionResult.Successful, result.Success);
+            Assert.True(result.Value.Value == 2);
+        }
+
+        [Fact]
+        public async Task AsyncPipeExecutorBreakAndReturnIfFailed()
+        {
+            var execIncOne = new IntModelIncrementOneEtor();
+            var pipe = PipeBuilder
+                .AsyncPipe<IntModel, int>()
+                .Cache(false)
+                .Executor(execIncOne).Label("exec_1").Add()
+                .Executor(async (model, cache) =>
+                    {
+                        model.Integer += 1;
+                        return PipeResult<int>
+                                .DefaultUnSuccessfulBreak
+                                .SetValue(model.Integer);
+                    })
+                    .Label("exec_2")
+                    .IfFail().Break(true).Return((m,r)=>r.SetValue(222)).Set()
+                    .Add()
+                .Executor(async (model, cache) =>
+                    {
+                        model.Integer += 1;
+                        return PipeResult<int>
+                                .DefaultSuccessful
+                                .SetValue(model.Integer);
+                    })
+                    .Label("exec_3")
+                    .Add()
+                .Return((model, results) =>
+                    {
+                        Assert.True(results.FirstOrDefault(x => x.Label == "exec_2").Value.Value == 222);
+                    
+                        if (!results.Any(x => x.Label == "exec_3") &&
+                            results.Length == 2)
+                            return PipeResult<int>
+                                .DefaultSuccessful
+                                .SetValue(results.Max(x => x.Value.Value));
+
+                        return PipeResult<int>
+                                .DefaultUnSuccessful
+                                .SetValue(results.Max(x => x.Value.Value));
+                    });
+
+            var result = await pipe.ExecuteAsync(new IntModel { Integer = 0 });
+            Assert.Equal(ExecutionResult.Successful, result.Success);
+            Assert.True(result.Value.Value == 222);
+        }
+
+        [Fact]
+        public async Task AsyncPipeExecutorExecuteIf()
+        {
+            var execIncOne = new IntModelIncrementOneEtor();
+            var pipe = PipeBuilder
+                .AsyncPipe<IntModel, int>()
+                .Cache(false)
+                .Executor(execIncOne).Label("exec_1").Add()
+                .Executor(async (model, cache) =>
+                    {
+                        model.Integer += 1;
+                        return PipeResult<int>
+                                .DefaultUnSuccessfulBreak
+                                .SetValue(model.Integer);
+                    })
+                    .Label("exec_2")
+                    .ExecuteIf(m => m.Integer > 100)
+                    .Add()
+                .Executor(async (model, cache) =>
+                {
+                    model.Integer += 1;
+                    return PipeResult<int>
+                            .DefaultSuccessful
+                            .SetValue(model.Integer);
+                })
+                    .Label("exec_3")
+                    .Add()
+                .Return((model, results) =>
+                {
+                    Assert.True(!results.Any(x => x.Label == "exec_2"));
+
+                    if (results.Any(x => x.Label == "exec_3") &&
+                        results.Length == 2)
+                        return PipeResult<int>
+                            .DefaultSuccessful
+                            .SetValue(results.Max(x => x.Value.Value));
+
+                    return PipeResult<int>
+                            .DefaultUnSuccessful
+                            .SetValue(results.Max(x => x.Value.Value));
+                });
+
+            var result = await pipe.ExecuteAsync(new IntModel { Integer = 0 });
+            Assert.Equal(ExecutionResult.Successful, result.Success);
+            Assert.True(result.Value.Value == 2);
+        }
+
+        [Fact]
+        public async Task AsyncPipeExecutorIfOkBreak()
+        {
+            var execIncOne = new IntModelIncrementOneEtor();
+            var pipe = PipeBuilder
+                .AsyncPipe<IntModel, int>()
+                .Cache(false)
+                .Executor(execIncOne).Label("exec_1").Add()
+                .Executor(async (model, cache) =>
+                    {
+                        model.Integer += 1;
+                        return PipeResult<int>
+                                .DefaultSuccessfulBreak
+                                .SetValue(model.Integer);
+                    })
+                    .Label("exec_2")
+                    .IfOk().Break(true).Set()
+                    .Add()
+                .Executor(async (model, cache) =>
+                    {
+                        model.Integer += 1;
+                        return PipeResult<int>
+                                .DefaultSuccessful
+                                .SetValue(model.Integer);
+                    })
+                    .Label("exec_3")
+                    .Add()
+                .Return((model, results) =>
+                    {
+                        Assert.Contains(results, x => x.Label == "exec_2");
+                        Assert.DoesNotContain(results, x => x.Label == "exec_3");
+
+                        if (results.Length == 2)
+                            return PipeResult<int>
+                                .DefaultSuccessful
+                                .SetValue(results.Max(x => x.Value.Value));
+
+                        return PipeResult<int>
+                                .DefaultUnSuccessful
+                                .SetValue(results.Max(x => x.Value.Value));
+                    });
+
+            var result = await pipe.ExecuteAsync(new IntModel { Integer = 0 });
+            Assert.Equal(ExecutionResult.Successful, result.Success);
+            Assert.True(result.Value.Value == 2);
+        }
+
+        [Fact]
+        public async Task AsyncPipeExecutorIfOkBreakAndReturn()
+        {
+            var execIncOne = new IntModelIncrementOneEtor();
+            var pipe = PipeBuilder
+                .AsyncPipe<IntModel, int>()
+                .Cache(false)
+                .Executor(execIncOne).Label("exec_1").Add()
+                .Executor(async (model, cache) =>
+                {
+                    model.Integer += 1;
+                    return PipeResult<int>
+                            .DefaultSuccessfulBreak
+                            .SetValue(model.Integer);
+                })
+                    .Label("exec_2")
+                    .IfOk().Break(true).Return((m,r) => r.SetValue(444)).Set()
+                    .Add()
+                .Executor(async (model, cache) =>
+                {
+                    model.Integer += 1;
+                    return PipeResult<int>
+                            .DefaultSuccessful
+                            .SetValue(model.Integer);
+                })
+                    .Label("exec_3")
+                    .Add()
+                .Return((model, results) =>
+                {
+                    Assert.Contains(results, x => x.Label == "exec_2");
+                    Assert.DoesNotContain(results, x => x.Label == "exec_3");
+
+                    if (results.Length == 2)
+                        return PipeResult<int>
+                            .DefaultSuccessful
+                            .SetValue(results.Max(x => x.Value.Value));
+
+                    return PipeResult<int>
+                            .DefaultUnSuccessful
+                            .SetValue(results.Max(x => x.Value.Value));
+                });
+
+            var result = await pipe.ExecuteAsync(new IntModel { Integer = 0 });
+            Assert.Equal(ExecutionResult.Successful, result.Success);
+            Assert.True(result.Value.Value == 444);
+        }
 
 
 

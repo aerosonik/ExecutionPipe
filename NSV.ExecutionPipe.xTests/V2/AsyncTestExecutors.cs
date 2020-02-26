@@ -105,6 +105,7 @@ namespace NSV.ExecutionPipe.xTests.V2
         }
     }
 
+
     public static class ExecutorFactory
     {
         public static Func<IAsyncExecutor<IntModel, int>> GetFuncIntModelIncrementOneEtor()

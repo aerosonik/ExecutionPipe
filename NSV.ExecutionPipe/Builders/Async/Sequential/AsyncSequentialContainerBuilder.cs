@@ -22,6 +22,7 @@ namespace NSV.ExecutionPipe.Builders
         private ExecutorSettings<M, R> _currentExecutorSettings;
         private IAsyncContainer<M, R> _currentContainer;
         private bool _skipCurrentExecutor = false;
+        private bool _executeIf = false;
         private readonly AsyncConditionalQueueBuilder<M, R> _conditionalQueueBuilder;
         #endregion
 
@@ -158,7 +159,8 @@ namespace NSV.ExecutionPipe.Builders
         #endregion
 
         #region IAsyncSequentialExecutorOkBuilder<M,R>
-        IAsyncSequentialExecutorOkBuilder<M, R> IAsyncSequentialExecutorOkBuilder<M, R>.Break(bool condition)
+        IAsyncSequentialExecutorOkBuilder<M, R> IAsyncSequentialExecutorOkBuilder<M, R>.Break(
+            bool condition)
         {
             if (_skipCurrentExecutor)
                 return this;
@@ -167,7 +169,8 @@ namespace NSV.ExecutionPipe.Builders
             return this;
         }
 
-        IAsyncSequentialExecutorOkBuilder<M, R> IAsyncSequentialExecutorOkBuilder<M, R>.Return(Func<M, PipeResult<R>, PipeResult<R>> handler)
+        IAsyncSequentialExecutorOkBuilder<M, R> IAsyncSequentialExecutorOkBuilder<M, R>.Return(
+            Func<M, PipeResult<R>, PipeResult<R>> handler)
         {
             if (_skipCurrentExecutor)
                 return this;
@@ -196,6 +199,7 @@ namespace NSV.ExecutionPipe.Builders
                 return this;
 
             _conditionalQueueBuilder.AddFuncIfCondition(condition);
+            _executeIf = true;
             return this;
         }
 
@@ -418,7 +422,6 @@ namespace NSV.ExecutionPipe.Builders
             _currentContainer = new AsyncSemaphoreContainer<M, R>(_currentContainer, key);
         }
 
-
         private void Label(string label)
         {
             if (_skipCurrentExecutor)
@@ -443,6 +446,12 @@ namespace NSV.ExecutionPipe.Builders
                 _conditionalQueueBuilder.Enque(
                     _currentExecutorSettings,
                     _currentContainer);
+
+            if (_executeIf)
+            {
+                _conditionalQueueBuilder.RemoveIfCondition();
+                _executeIf = false;
+            }
 
             _skipCurrentExecutor = false;
             _currentContainer = null;
