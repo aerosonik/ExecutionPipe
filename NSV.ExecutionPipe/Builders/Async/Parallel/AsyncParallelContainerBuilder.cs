@@ -139,21 +139,19 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
         }
 
         IAsyncParallelExecutorBuilder<M, R> IAsyncParallelExecutorBuilder<M, R>.Restricted(
-            int minCount, 
-            int maxCount, 
+            int initialCount, 
             string key)
         {
-            Restricted(minCount, maxCount, key);
+            Restricted(initialCount, key);
             return this;
         }
 
         IAsyncParallelExecutorBuilder<M, R> IAsyncParallelExecutorBuilder<M, R>.Restricted(
             bool condition, 
-            int minCount, 
-            int maxCount, 
+            int initialCount, 
             string key)
         {
-            Restricted(condition, minCount, maxCount, key);
+            Restricted(condition, initialCount, key);
             return this;
         }
 
@@ -232,21 +230,19 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
         }
 
         IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelDefaultExecutorBuilder<M, R>.Restricted(
-            int minCount, 
-            int maxCount, 
+            int initialCount, 
             string key)
         {
-            Restricted(minCount, maxCount, key);
+            Restricted(initialCount, key);
             return this;
         }
 
         IAsyncParallelDefaultExecutorBuilder<M, R> IAsyncParallelDefaultExecutorBuilder<M, R>.Restricted(
             bool condition, 
-            int minCount, 
-            int maxCount, 
+            int initialCount, 
             string key)
         {
-            Restricted(condition, minCount, maxCount, key);
+            Restricted(condition, initialCount, key);
             return this;
         }
 
@@ -343,26 +339,24 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
 
         private void Restricted(
             bool condition, 
-            int minCount, 
-            int maxCount, 
+            int initialCount, 
             string key)
         {
             if (_skipCurrentExecutor || !condition)
                 return;
 
-            PipeManager.SetSemaphore(minCount, maxCount, key);
+            PipeManager.SetSemaphore(initialCount, key);
             _currentContainer = new AsyncSemaphoreContainer<M, R>(_currentContainer, key);
         }
 
         private void Restricted(
-            int minCount, 
-            int maxCount, 
+            int initialCount, 
             string key)
         {
             if (_skipCurrentExecutor)
                 return;
 
-            PipeManager.SetSemaphore(minCount, maxCount, key);
+            PipeManager.SetSemaphore(initialCount, key);
             _currentContainer = new AsyncSemaphoreContainer<M, R>(_currentContainer, key);
         }
 

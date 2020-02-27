@@ -35,6 +35,27 @@ namespace NSV.ExecutionPipe.xTests.V2
                 .SetValue(model.Integer);
         }
     }
+    public class IntModelIncrementThreeEtor : IAsyncExecutor<IntModel, int>
+    {
+        private readonly RestrictionTester _restrictionTester;
+        public IntModelIncrementThreeEtor(RestrictionTester restrictionTester)
+        {
+            _restrictionTester = restrictionTester;
+        }
+        public async Task<PipeResult<int>> ExecuteAsync(
+            IntModel model,
+            IPipeCache pipeCache = null)
+        {
+            _restrictionTester.IncrementCounter();
+            await Task.Delay(100);
+            model.Integer += 3;
+            pipeCache.SetSafely<int>("3", model.Integer);
+            _restrictionTester.DecrementCounter();
+            return PipeResult<int>
+                .DefaultSuccessful
+                .SetValue(model.Integer);
+        }
+    }
 
     public class Delay50Etor : IAsyncExecutor<IntModel, TimeSpan>
     {

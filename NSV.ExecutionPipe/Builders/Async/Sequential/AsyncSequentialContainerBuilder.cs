@@ -221,21 +221,19 @@ namespace NSV.ExecutionPipe.Builders
         }
 
         IAsyncSequentialExecutorBuilder<M, R> IAsyncSequentialExecutorBuilder<M, R>.Restricted(
-            int minCount,
-            int maxCount,
+            int initialCount,
             string key)
         {
-            Restricted(minCount, maxCount, key);
+            Restricted(initialCount, key);
             return this;
         }
 
         IAsyncSequentialExecutorBuilder<M, R> IAsyncSequentialExecutorBuilder<M, R>.Restricted(
             bool condition,
-            int minCount,
-            int maxCount,
+            int initialCount,
             string key)
         {
-            Restricted(condition, minCount, maxCount, key);
+            Restricted(condition, initialCount, key);
             return this;
         }
 
@@ -284,16 +282,19 @@ namespace NSV.ExecutionPipe.Builders
         }
 
         IAsyncSequentialDefaultExecutorBuilder<M, R> IAsyncSequentialDefaultExecutorBuilder<M, R>.Restricted(
-            int minCount, int maxCount, string key)
+            int initialCount, 
+            string key)
         {
-            Restricted(minCount, maxCount, key);
+            Restricted(initialCount, key);
             return this;
         }
 
         IAsyncSequentialDefaultExecutorBuilder<M, R> IAsyncSequentialDefaultExecutorBuilder<M, R>.Restricted(
-            bool condition, int minCount, int maxCount, string key)
+            bool condition, 
+            int initialCount, 
+            string key)
         {
-            Restricted(condition, minCount, maxCount, key);
+            Restricted(condition, initialCount, key);
             return this;
         }
 
@@ -407,23 +408,23 @@ namespace NSV.ExecutionPipe.Builders
 
         private void Restricted(
             bool condition, 
-            int minCount, 
-            int maxCount, 
+            int initialCount, 
             string key)
         {
             if (_skipCurrentExecutor || !condition)
                 return;
 
-            PipeManager.SetSemaphore(minCount, maxCount, key);
+            PipeManager.SetSemaphore(initialCount, key);
             _currentContainer = new AsyncSemaphoreContainer<M, R>(_currentContainer, key);
         }
         private void Restricted(
-            int minCount, int maxCount, string key)
+            int initialCount, 
+            string key)
         {
             if (_skipCurrentExecutor)
                 return;
 
-            PipeManager.SetSemaphore(minCount, maxCount, key);
+            PipeManager.SetSemaphore(initialCount, key);
             _currentContainer = new AsyncSemaphoreContainer<M, R>(_currentContainer, key);
         }
 

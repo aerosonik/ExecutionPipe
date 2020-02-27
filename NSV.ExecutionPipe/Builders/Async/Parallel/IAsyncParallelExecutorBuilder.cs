@@ -10,13 +10,11 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
         IAsyncParallelExecutorBuilder<M, R> StopWatch();
         IAsyncParallelExecutorBuilder<M, R> StopWatch(bool condition);
         IAsyncParallelExecutorBuilder<M, R> Restricted(
-            int minCount,
-            int maxCount,
+            int initialCount,
             string key);
         IAsyncParallelExecutorBuilder<M, R> Restricted(
             bool condition,
-            int minCount,
-            int maxCount,
+            int initialCount,
             string key);
         IAsyncParallelExecutorBuilder<M, R> Label(string label);
         IAsyncParallelExecutorBuilder<M, R> ExecuteIf(Func<M, bool> condition);
@@ -28,8 +26,7 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
         IAsyncParallelExecutorFailBuilder<M> IfFail();
         IAsyncParallelExecutorBuilder<M> StopWatch();
         IAsyncParallelExecutorBuilder<M> StopWatch(bool condition);
-        IAsyncParallelExecutorBuilder<M> Restricted(int maxCount);
-        IAsyncParallelExecutorBuilder<M> Restricted(bool condition, int maxCount);
+        IAsyncParallelExecutorBuilder<M> Restricted(int initialCount);
         IAsyncParallelExecutorBuilder<M> Label(string label);
         IAsyncParallelExecutorBuilder<M> ExecuteIf(Func<M, bool> condition);
         IAsyncParallelPipeBuilder<M> Add();
@@ -40,8 +37,7 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
         IAsyncParallelExecutorFailBuilder IfFail();
         IAsyncParallelExecutorBuilder StopWatch();
         IAsyncParallelExecutorBuilder StopWatch(bool condition);
-        IAsyncParallelExecutorBuilder Restricted(int maxCount);
-        IAsyncParallelExecutorBuilder Restricted(bool condition, int maxCount);
+        IAsyncParallelExecutorBuilder Restricted(int initialCount);
         IAsyncParallelExecutorBuilder Label(string label);
         IAsyncParallelPipeBuilder Add();
     }

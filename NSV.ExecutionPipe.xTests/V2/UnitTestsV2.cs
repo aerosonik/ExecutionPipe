@@ -35,7 +35,7 @@ namespace NSV.ExecutionPipe.xTests.V2
                                  .DefaultSuccessful.SetValue(true);
                          })
                          .Label("SecondExecutor")
-                         .Restricted(1, 10, "SecondExecutor")
+                         .Restricted(10, "SecondExecutor")
                          .StopWatch()
                          .ExecuteIf(x => x.Integer > 1)
                          .IfFail()
@@ -47,7 +47,6 @@ namespace NSV.ExecutionPipe.xTests.V2
                 .Default((x, cache) =>
                      {
                          x.Integer += 100;
-                         //cache.Delete("key");
                          return PipeResult<bool>
                              .DefaultSuccessful.SetValue(true);
                      })
@@ -243,10 +242,10 @@ namespace NSV.ExecutionPipe.xTests.V2
                                 .SetValue(50);
                     })
                     .Label("exec_2")
-                    .IfFail().Retry(3,100).Set()
+                    .IfFail().Retry(3, 100).Set()
                     .StopWatch()
                     .Add()
-                .Default((model, cache) => 
+                .Default((model, cache) =>
                     {
                         int count = cache.GetSafely<int>("break_count");
                         return PipeResult<double>
@@ -257,7 +256,7 @@ namespace NSV.ExecutionPipe.xTests.V2
                     {
                         var sumElapsed = TimeSpan.FromMilliseconds(
                             results.Sum(x => x.Elapsed.TotalMilliseconds));
-                        if(results.FirstOrDefault(x => x.Label == "Default").Value.Value == 4)
+                        if (results.FirstOrDefault(x => x.Label == "Default").Value.Value == 4)
                             return PipeResult<double>
                                 .DefaultSuccessful
                                 .SetValue(sumElapsed.TotalMilliseconds);
@@ -270,7 +269,7 @@ namespace NSV.ExecutionPipe.xTests.V2
             var integer = new IntModel { Integer = 0 };
             var result = await pipe.ExecuteAsync(integer);
             Assert.Equal(ExecutionResult.Successful, result.Success);
-            
+
             Assert.True(result.Value > 450);
             Assert.True(result.Elapsed.TotalMilliseconds > result.Value);
         }
@@ -311,7 +310,7 @@ namespace NSV.ExecutionPipe.xTests.V2
                     }).Add()
                 .Return((model, results) =>
                 {
-                    if (results.Any(x => x.Label == "Default") && 
+                    if (results.Any(x => x.Label == "Default") &&
                         !results.Any(x => x.Label == "exec_3") &&
                         results.Length == 3)
                         return PipeResult<int>
@@ -410,7 +409,7 @@ namespace NSV.ExecutionPipe.xTests.V2
                     .Add()
                 .Return((model, results) =>
                     {
-                        if (!results.Any(x => x.Label == "exec_3") && 
+                        if (!results.Any(x => x.Label == "exec_3") &&
                             results.Length == 2)
                             return PipeResult<int>
                                 .DefaultSuccessful
@@ -442,7 +441,7 @@ namespace NSV.ExecutionPipe.xTests.V2
                                 .SetValue(model.Integer);
                     })
                     .Label("exec_2")
-                    .IfFail().Break(true).Return((m,r)=>r.SetValue(222)).Set()
+                    .IfFail().Break(true).Return((m, r) => r.SetValue(222)).Set()
                     .Add()
                 .Executor(async (model, cache) =>
                     {
@@ -456,7 +455,7 @@ namespace NSV.ExecutionPipe.xTests.V2
                 .Return((model, results) =>
                     {
                         Assert.True(results.FirstOrDefault(x => x.Label == "exec_2").Value.Value == 222);
-                    
+
                         if (!results.Any(x => x.Label == "exec_3") &&
                             results.Length == 2)
                             return PipeResult<int>
@@ -583,7 +582,7 @@ namespace NSV.ExecutionPipe.xTests.V2
                             .SetValue(model.Integer);
                 })
                     .Label("exec_2")
-                    .IfOk().Break(true).Return((m,r) => r.SetValue(444)).Set()
+                    .IfOk().Break(true).Return((m, r) => r.SetValue(444)).Set()
                     .Add()
                 .Executor(async (model, cache) =>
                 {
@@ -682,7 +681,7 @@ namespace NSV.ExecutionPipe.xTests.V2
             var pipe = PipeBuilder
                 .AsyncPipe<IntModel, int>()
                 .Cache(false)
-                .Executor((model, cache) => 
+                .Executor((model, cache) =>
                     {
                         Assert.True(cache.GetSafely<int>("1") == 0);
                         Assert.True(cache.GetSafely<int>("2") == 0);
@@ -692,7 +691,7 @@ namespace NSV.ExecutionPipe.xTests.V2
                     }).Label("exec_1").Add()
                 .Executor(execIncOne).Label("exec_2").Add()
                 .Executor(execIncTwo).Label("exec_3").Add()
-                .Default((model, cache) => 
+                .Default((model, cache) =>
                     {
                         Assert.True(cache.GetSafely<int>("1") == 1);
                         Assert.True(cache.GetSafely<int>("2") == 3);
@@ -700,7 +699,7 @@ namespace NSV.ExecutionPipe.xTests.V2
                         return PipeResult<int>
                             .DefaultSuccessful
                             .SetValue(model.Integer);
-                    }).Add()              
+                    }).Add()
                 .Return((model, results) =>
                 {
                     Assert.Contains(results, x => x.Label == "exec_1");
@@ -744,7 +743,7 @@ namespace NSV.ExecutionPipe.xTests.V2
                 }).Label("exec_1").Add()
                 .Executor(execIncOne).Label("exec_2").Add()
                 .If(model => model.Integer > 100)
-                    .Executor((model,cache) =>
+                    .Executor((model, cache) =>
                         {
                             model.Integer += 1;
                             cache.SetSafely<int>("3", model.Integer);
@@ -790,7 +789,124 @@ namespace NSV.ExecutionPipe.xTests.V2
             }
         }
 
+        [Fact]
+        public async Task AsyncPipeMultipleExecutionsWithRestriction()
+        {
+            var restriction = new RestrictionTester();
+            var execIncOne = new IntModelIncrementOneEtor();
+            var execIncTwo = new IntModelIncrementTwoEtor();
+            var execIncThree = new IntModelIncrementThreeEtor(restriction);
 
+            var pipe = PipeBuilder
+                .AsyncPipe<IntModel, int>()
+                .Executor(execIncOne).Label("exec_1").Add()
+                .Executor(execIncTwo).Label("exec_2").Add()
+                .Executor(execIncThree).Label("exec_3")
+                    .Restricted(3, "rest_1")
+                    .Add()
+                .Return((model, results) =>
+                {
+                    Assert.Equal(3, results.Length);
+                    return PipeResult<int>
+                        .DefaultSuccessful
+                        .SetValue(model.Integer);
+                });
+
+            var execIncOne1 = new IntModelIncrementOneEtor();
+            var execIncTwo1 = new IntModelIncrementTwoEtor();
+            var execIncThree1 = new IntModelIncrementThreeEtor(restriction);
+
+            var pipe1 = PipeBuilder
+                .AsyncPipe<IntModel, int>()
+                .Executor(execIncOne1).Label("exec_1").Add()
+                .Executor(execIncTwo1).Label("exec_2").Add()
+                .Executor(execIncThree1).Label("exec_3")
+                    .Restricted(3, "rest_1")
+                    .Add()
+                .Return((model, results) =>
+                {
+                    Assert.Equal(3, results.Length);
+                    return PipeResult<int>
+                        .DefaultSuccessful
+                        .SetValue(model.Integer);
+                });
+
+            var execIncOne2 = new IntModelIncrementOneEtor();
+            var execIncTwo2 = new IntModelIncrementTwoEtor();
+            var execIncThree2 = new IntModelIncrementThreeEtor(restriction);
+
+            var pipe2 = PipeBuilder
+                .AsyncPipe<IntModel, int>()
+                .Executor(execIncOne2).Label("exec_1").Add()
+                .Executor(execIncTwo2).Label("exec_2").Add()
+                .Executor(execIncThree2).Label("exec_3")
+                    .Restricted(3, "rest_1")
+                    .Add()
+                .Return((model, results) =>
+                {
+                    Assert.Equal(3, results.Length);
+                    return PipeResult<int>
+                        .DefaultSuccessful
+                        .SetValue(model.Integer);
+                });
+
+            var execIncOne3 = new IntModelIncrementOneEtor();
+            var execIncTwo3 = new IntModelIncrementTwoEtor();
+            var execIncThree3 = new IntModelIncrementThreeEtor(restriction);
+
+            var pipe3 = PipeBuilder
+                .AsyncPipe<IntModel, int>()
+                .Executor(execIncOne3).Label("exec_1").Add()
+                .Executor(execIncTwo3).Label("exec_2").Add()
+                .Executor(execIncThree3).Label("exec_3")
+                    .Restricted(3, "rest_1")
+                    .Add()
+                .Return((model, results) =>
+                {
+                    Assert.Equal(3, results.Length);
+                    return PipeResult<int>
+                        .DefaultSuccessful
+                        .SetValue(model.Integer);
+                });
+
+            var execIncOne4 = new IntModelIncrementOneEtor();
+            var execIncTwo4 = new IntModelIncrementTwoEtor();
+            var execIncThree4 = new IntModelIncrementThreeEtor(restriction);
+
+            var pipe4 = PipeBuilder
+                .AsyncPipe<IntModel, int>()
+                .Executor(execIncOne4).Label("exec_1").Add()
+                .Executor(execIncTwo4).Label("exec_2").Add()
+                .Executor(execIncThree4).Label("exec_3")
+                    .Restricted(3, "rest_1")
+                    .Add()
+                .Return((model, results) =>
+                {
+                    Assert.Equal(3, results.Length);
+                    return PipeResult<int>
+                        .DefaultSuccessful
+                        .SetValue(model.Integer);
+                });
+
+            var length = 20;
+            var array = new int[length];
+
+            for (int i = 0; i < length; i++)
+            {
+                var pipeTask = pipe.ExecuteAsync(new IntModel { Integer = 0 });
+                var pipeTask1 = pipe1.ExecuteAsync(new IntModel { Integer = 0 });
+                var pipeTask2 = pipe2.ExecuteAsync(new IntModel { Integer = 0 });
+                var pipeTask3 = pipe3.ExecuteAsync(new IntModel { Integer = 0 });
+                var pipeTask4 = pipe4.ExecuteAsync(new IntModel { Integer = 0 });
+
+                var results = await Task.WhenAll(pipeTask, pipeTask1, pipeTask2, pipeTask3, pipeTask4);
+
+                Assert.True(restriction.MaxCount < 4);
+                array[i] = restriction.MaxCount;
+            }
+            var avg = array.Average();
+            var max = array.Max();
+        }
 
     }
 }

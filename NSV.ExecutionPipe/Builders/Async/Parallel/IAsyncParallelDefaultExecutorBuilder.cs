@@ -7,13 +7,11 @@
         IAsyncParallelDefaultExecutorBuilder<M, R> StopWatch();
         IAsyncParallelDefaultExecutorBuilder<M, R> StopWatch(bool condition);
         IAsyncParallelDefaultExecutorBuilder<M, R> Restricted(
-            int minCount,
-            int maxCount,
+            int initialCount,
             string key);
         IAsyncParallelDefaultExecutorBuilder<M, R> Restricted(
             bool condition,
-            int minCount,
-            int maxCount,
+            int initialCount,
             string key);
         IAsyncParallelDefaultExecutorBuilder<M, R> Label(string label);
         IAsynPipeBuilder<M, R> Add();
@@ -26,13 +24,11 @@
         IAsyncParallelDefaultExecutorBuilder<M> StopWatch();
         IAsyncParallelDefaultExecutorBuilder<M> StopWatch(bool condition);
         IAsyncParallelDefaultExecutorBuilder<M> Restricted(
-            int minCount,
-            int maxCount,
+            int initialCount,
             string key);
         IAsyncParallelDefaultExecutorBuilder<M> Restricted(
             bool condition,
-            int minCount,
-            int maxCount,
+            int initialCount,
             string key);
         IAsyncParallelDefaultExecutorBuilder<M> Label(string label);
         IAsynPipeBuilder<M> Add();

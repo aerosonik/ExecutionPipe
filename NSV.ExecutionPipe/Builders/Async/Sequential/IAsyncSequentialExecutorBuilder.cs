@@ -9,13 +9,11 @@ namespace NSV.ExecutionPipe.Builders.Async.Sequential
         IAsyncSequentialExecutorBuilder<M, R> StopWatch();
         IAsyncSequentialExecutorBuilder<M, R> StopWatch(bool condition);
         IAsyncSequentialExecutorBuilder<M, R> Restricted(
-            int minCount,
-            int maxCount,
+            int initialCount,
             string key);
         IAsyncSequentialExecutorBuilder<M, R> Restricted(
-            bool condition, 
-            int minCount,
-            int maxCount,
+            bool condition,
+            int initialCount,
             string key);
         IAsyncSequentialExecutorBuilder<M, R> Label(string label);
         IAsyncSequentialExecutorBuilder<M, R> ExecuteIf(Func<M, bool> condition);
@@ -28,8 +26,8 @@ namespace NSV.ExecutionPipe.Builders.Async.Sequential
         IAsyncSequentialExecutorOkBuilder<M> IfOk();
         IAsyncSequentialExecutorBuilder<M> StopWatch();
         IAsyncSequentialExecutorBuilder<M> StopWatch(bool condition);
-        IAsyncSequentialExecutorBuilder<M> Restricted(int maxCount);
-        IAsyncSequentialExecutorBuilder<M> Restricted(bool condition, int maxCount);
+        IAsyncSequentialExecutorBuilder<M> Restricted(int initialCount);
+        IAsyncSequentialExecutorBuilder<M> Restricted(bool condition, int initialCount);
         IAsyncSequentialExecutorBuilder<M> Label(string label);
         IAsyncSequentialExecutorBuilder<M> ExecuteIf(Func<M, bool> condition);
         IAsyncSequentialPipeBuilder<M> Add();
@@ -41,8 +39,8 @@ namespace NSV.ExecutionPipe.Builders.Async.Sequential
         IAsyncSequentialExecutorOkBuilder IfOk();
         IAsyncSequentialExecutorBuilder StopWatch();
         IAsyncSequentialExecutorBuilder StopWatch(bool condition);
-        IAsyncSequentialExecutorBuilder Restricted(int maxCount);
-        IAsyncSequentialExecutorBuilder Restricted(bool condition, int maxCount);
+        IAsyncSequentialExecutorBuilder Restricted(int initialCount);
+        IAsyncSequentialExecutorBuilder Restricted(bool condition, int initialCount);
         IAsyncSequentialExecutorBuilder Label(string label);
         IAsyncSequentialPipeBuilder Add();
     }
