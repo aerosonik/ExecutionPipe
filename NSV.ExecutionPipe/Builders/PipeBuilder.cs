@@ -18,34 +18,34 @@ namespace NSV.ExecutionPipe.Builders
         {
             return new AsyncSequentialPipeBuilder<M, R>();
         }
-        public static IAsyncSequentialPipeBuilder<M> AsyncPipe<M>()
-        {
-            //return new AsyncSequentialPipeBuilder<M>();
-            throw new NotImplementedException("PipeBuilder.AsyncPipe<M>()");
-        }
-        public static IAsyncSequentialPipeBuilder AsyncPipe()
-        {
-            //return new AsyncSequentialPipeBuilder();
-            throw new NotImplementedException("PipeBuilder.AsyncPipe()");
-        }
+        //public static IAsyncSequentialPipeBuilder<M> AsyncPipe<M>()
+        //{
+        //    //return new AsyncSequentialPipeBuilder<M>();
+        //    throw new NotImplementedException("PipeBuilder.AsyncPipe<M>()");
+        //}
+        //public static IAsyncSequentialPipeBuilder AsyncPipe()
+        //{
+        //    //return new AsyncSequentialPipeBuilder();
+        //    throw new NotImplementedException("PipeBuilder.AsyncPipe()");
+        //}
         #endregion
 
         #region Parallel
 
-        public static IAsyncParallelPipeBuilder<M, R> AsyncParallelPipe<M, R>()
-        {
-            return new AsyncParallelPipeBuilder<M, R>();
-        }
-        public static IAsyncParallelPipeBuilder<M> AsyncParallelPipe<M>()
-        {
-            //return new AsyncSequentialPipeBuilder<M>();
-            throw new NotImplementedException("PipeBuilder.AsyncParallelPipe<M>()");
-        }
-        public static IAsyncParallelPipeBuilder AsyncParallelPipe()
-        {
-            //return new AsyncSequentialPipeBuilder();
-            throw new NotImplementedException("PipeBuilder.AsyncParallelPipe()");
-        }
+        //public static IAsyncParallelPipeBuilder<M, R> AsyncParallelPipe<M, R>()
+        //{
+        //    return new AsyncParallelPipeBuilder<M, R>();
+        //}
+        //public static IAsyncParallelPipeBuilder<M> AsyncParallelPipe<M>()
+        //{
+        //    //return new AsyncSequentialPipeBuilder<M>();
+        //    throw new NotImplementedException("PipeBuilder.AsyncParallelPipe<M>()");
+        //}
+        //public static IAsyncParallelPipeBuilder AsyncParallelPipe()
+        //{
+        //    //return new AsyncSequentialPipeBuilder();
+        //    throw new NotImplementedException("PipeBuilder.AsyncParallelPipe()");
+        //}
 
         #endregion
 
@@ -54,21 +54,21 @@ namespace NSV.ExecutionPipe.Builders
         #region Sync
 
         #region Sequential
-        public static ISyncSequentialPipeBuilder<M, R> SyncPipe<M, R>()
-        {
-            throw new NotImplementedException("PipeBuilder.SyncPipe<M,R>()");
-            //return new AsyncSequentialPipeBuilder<M, R>();
-        }
-        public static ISyncSequentialPipeBuilder<M> SyncPipe<M>()
-        {
-            //return new AsyncSequentialPipeBuilder<M>();
-            throw new NotImplementedException("PipeBuilder.SyncPipe<M>()");
-        }
-        public static ISyncSequentialPipeBuilder SyncPipe()
-        {
-            //return new AsyncSequentialPipeBuilder();
-            throw new NotImplementedException("PipeBuilder.SyncPipe()");
-        }
+        //public static ISyncSequentialPipeBuilder<M, R> SyncPipe<M, R>()
+        //{
+        //    throw new NotImplementedException("PipeBuilder.SyncPipe<M,R>()");
+        //    //return new AsyncSequentialPipeBuilder<M, R>();
+        //}
+        //public static ISyncSequentialPipeBuilder<M> SyncPipe<M>()
+        //{
+        //    //return new AsyncSequentialPipeBuilder<M>();
+        //    throw new NotImplementedException("PipeBuilder.SyncPipe<M>()");
+        //}
+        //public static ISyncSequentialPipeBuilder SyncPipe()
+        //{
+        //    //return new AsyncSequentialPipeBuilder();
+        //    throw new NotImplementedException("PipeBuilder.SyncPipe()");
+        //}
         #endregion
 
         #region Parallel
