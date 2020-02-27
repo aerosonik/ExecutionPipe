@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <Authors>aerosonik</Authors>
     <Company>NSV</Company>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -17,12 +17,20 @@
     <Copyright>aerosonik@nsv 2019</Copyright>
     <PackageProjectUrl>https://github.com/aerosonik/ExecutionPipe</PackageProjectUrl>
     <RepositoryUrl>https://github.com/aerosonik/ExecutionPipe</RepositoryUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/aerosonik/ValidationPipe/f5997cdfaff661d36939c45823e93bb613a3767d/icon.png</PackageIconUrl>
     <PackageTags>Pipe</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile></DocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Collections.Concurrent" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Pipes\Sync\Parallel\" />
+    <Folder Include="Pipes\Sync\Sequential\" />
+  </ItemGroup>
 
 </Project>

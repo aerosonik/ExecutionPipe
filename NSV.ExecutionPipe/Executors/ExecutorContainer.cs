@@ -56,12 +56,14 @@ namespace NSV.ExecutionPipe.Executors
         {
             var executor = InitExecutor();
             if (!UseStopWatch)
-                return (await executor.ExecuteAsync(model).ConfigureAwait(false))
+                return (await executor.ExecuteAsync(model)
+                    .ConfigureAwait(false))
                     .SetLabel(Label);
 
             var sw = new Stopwatch();
             sw.Start();
-            var result = await executor.ExecuteAsync(model).ConfigureAwait(false);
+            var result = await executor.ExecuteAsync(model)
+                .ConfigureAwait(false);
             sw.Stop();
             return result.SetElapsed(sw.Elapsed).SetLabel(Label);
         }
