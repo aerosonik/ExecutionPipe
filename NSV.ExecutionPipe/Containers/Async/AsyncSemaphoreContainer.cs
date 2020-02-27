@@ -1,6 +1,7 @@
 ﻿using NSV.ExecutionPipe.Cache;
 using NSV.ExecutionPipe.Models;
 using NSV.ExecutionPipe.Pipes;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NSV.ExecutionPipe.Containers.Async
@@ -8,31 +9,30 @@ namespace NSV.ExecutionPipe.Containers.Async
     public class AsyncSemaphoreContainer<M, R> : IAsyncContainer<M, R>
     {
         private readonly IAsyncContainer<M, R> _container;
-        private readonly string _semaphoreName;
+        private readonly SemaphoreSlim _semaphore;
         public AsyncSemaphoreContainer(
             IAsyncContainer<M, R> container,
             string semaphoreName)
         {
             _container = container;
-            _semaphoreName = semaphoreName;
+            _semaphore = PipeManager.GetSemaphore(semaphoreName);
         }
 
         public async Task<PipeResult<R>> RunAsync(M model, IPipeCache cache)
         {
             var result = PipeResult<R>.Default;
 
-            var semaphore = PipeManager.GetSemaphore(_semaphoreName);
-            if (semaphore == null)
+            if (_semaphore == null)
                 return await _container.RunAsync(model, cache);
 
-            await semaphore.WaitAsync();
+            await _semaphore.WaitAsync();
             try
             {
                 result = await _container.RunAsync(model, cache);
             }
             finally
             {
-                semaphore.Release();
+                _semaphore.Release();
             }
             return result;
         }
@@ -41,31 +41,30 @@ namespace NSV.ExecutionPipe.Containers.Async
     public class AsyncSemaphoreContainer<M> : IAsyncContainer<M>
     {
         private readonly IAsyncContainer<M> _container;
-        private readonly string _semaphoreName;
+        private readonly SemaphoreSlim _semaphore;
         public AsyncSemaphoreContainer(
             IAsyncContainer<M> container,
             string semaphoreName)
         {
             _container = container;
-            _semaphoreName = semaphoreName;
+            _semaphore = PipeManager.GetSemaphore(semaphoreName);
         }
 
         public async Task<PipeResult> RunAsync(M model, IPipeCache cache)
         {
             var result = PipeResult.Default;
 
-            var semaphore = PipeManager.GetSemaphore(_semaphoreName);
-            if (semaphore == null)
+            if (_semaphore == null)
                 return await _container.RunAsync(model, cache);
 
-            await semaphore.WaitAsync();
+            await _semaphore.WaitAsync();
             try
             {
                 result = await _container.RunAsync(model, cache);
             }
             finally
             {
-                semaphore.Release();
+                _semaphore.Release();
             }
             return result;
         }
@@ -74,31 +73,30 @@ namespace NSV.ExecutionPipe.Containers.Async
     public class AsyncSemaphoreContainer : IAsyncContainer
     {
         private readonly IAsyncContainer _container;
-        private readonly string _semaphoreName;
+        private readonly SemaphoreSlim _semaphore;
         public AsyncSemaphoreContainer(
             IAsyncContainer container,
             string semaphoreName)
         {
             _container = container;
-            _semaphoreName = semaphoreName;
+            _semaphore = PipeManager.GetSemaphore(semaphoreName);
         }
 
         public async Task<PipeResult> RunAsync(IPipeCache cache)
         {
             var result = PipeResult.Default;
 
-            var semaphore = PipeManager.GetSemaphore(_semaphoreName);
-            if (semaphore == null)
+            if (_semaphore == null)
                 return await _container.RunAsync(cache);
 
-            await semaphore.WaitAsync();
+            await _semaphore.WaitAsync();
             try
             {
                 result = await _container.RunAsync(cache);
             }
             finally
             {
-                semaphore.Release();
+                _semaphore.Release();
             }
             return result;
         }

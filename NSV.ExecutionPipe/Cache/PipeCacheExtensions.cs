@@ -32,7 +32,7 @@ namespace NSV.ExecutionPipe.Cache
                 cache.Delete(key);
         }
 
-        public static void ClearSafely<T>(this IPipeCache cache)
+        public static void ClearSafely(this IPipeCache cache)
         {
             if (cache != null)
                 cache.Clear();

@@ -19,7 +19,7 @@ namespace NSV.ExecutionPipe.Pipes
 
         public static void SetSemaphore(int max, string key)
         {
-            SetSemaphore(0, max, key);
+            SetSemaphore(1, max, key);
         }
 
         public static SemaphoreSlim GetSemaphore(string key)

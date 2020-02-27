@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using NSV.ExecutionPipe.Cache;
@@ -16,6 +17,8 @@ namespace NSV.ExecutionPipe.Pipes.Async
         #region IAsyncPipe<M, R>
         async Task<PipeResult<R>> IAsyncPipe<M, R>.ExecuteAsync(M model)
         {
+            _results = new List<PipeResult<R>>();
+
             if (!_useStopWatch)
                 return await RunAsync(model);
 

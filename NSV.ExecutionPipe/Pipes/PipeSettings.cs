@@ -27,7 +27,7 @@ namespace NSV.ExecutionPipe.Pipes
         protected Func<IPipeCache> _cacheFunc = () => null;
         protected IPipeCache _cacheObject;
 
-        protected List<PipeResult<R>> _results = new List<PipeResult<R>>();
+        protected List<PipeResult<R>> _results;
 
         protected Func<M, PipeResult<R>[], PipeResult<R>> _returnHandler;
 

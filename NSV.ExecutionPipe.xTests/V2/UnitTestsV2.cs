@@ -614,6 +614,182 @@ namespace NSV.ExecutionPipe.xTests.V2
             Assert.True(result.Value.Value == 444);
         }
 
+        [Fact]
+        public async Task AsyncPipeIfEndIdWithNestedIf()
+        {
+            var execIncOne = new IntModelIncrementOneEtor();
+            var pipe = PipeBuilder
+                .AsyncPipe<IntModel, int>()
+                .Executor(execIncOne) // in pipe, will not be executed
+                    .ExecuteIf(model => model.Integer > 0)
+                    .Label("exec_1").Add()
+                .If(model => model.Integer == 0)
+                    .Executor(execIncOne).Label("exec_2").Add()
+                .EndIf()
+                .Executor(execIncOne).Label("exec_3").Add()
+                .If(model => model.Integer > 0)
+                    .Executor(execIncOne).Label("exec_3.1").Add()
+                    .If(model => model.Integer > 100)
+                        .Executor(execIncOne) // in pipe, will not be executed
+                            .Label("exec_3.2")
+                            .Add()
+                    .EndIf()
+                .EndIf()
+                .If(model => model.Integer > 0)
+                    .Executor(execIncOne).Label("exec_4").Add()
+                    .If(false)
+                        .Executor(execIncOne).Label("exec_4.1").Add() // excluded from pipe
+                        .Executor(execIncOne).Label("exec_4.2").Add() // excluded from pipe
+                    .EndIf()
+                    .Executor(execIncOne)
+                        .ExecuteIf(model => model.Integer > 0)
+                        .Label("exec_4.3")
+                        .Add()
+                .EndIf()
+                .Return((model, results) =>
+                {
+                    Assert.Contains(results, x => x.Label == "exec_2");
+                    Assert.Contains(results, x => x.Label == "exec_3");
+                    Assert.Contains(results, x => x.Label == "exec_3.1");
+                    Assert.Contains(results, x => x.Label == "exec_4");
+                    Assert.Contains(results, x => x.Label == "exec_4.3");
+
+                    Assert.DoesNotContain(results, x => x.Label == "exec_1");
+                    Assert.DoesNotContain(results, x => x.Label == "exec_3.2");
+                    Assert.DoesNotContain(results, x => x.Label == "exec_4.1");
+                    Assert.DoesNotContain(results, x => x.Label == "exec_4.2");
+
+                    if (results.Length == 5)
+                        return PipeResult<int>
+                            .DefaultSuccessful
+                            .SetValue(model.Integer);
+
+                    return PipeResult<int>
+                            .DefaultUnSuccessful
+                            .SetValue(model.Integer);
+                });
+
+            var result = await pipe.ExecuteAsync(new IntModel { Integer = 0 });
+            Assert.Equal(ExecutionResult.Successful, result.Success);
+            Assert.True(result.Value.Value == 5);
+        }
+
+        [Fact]
+        public async Task AsyncPipeMultipleExecutionsWithCache()
+        {
+            var execIncOne = new IntModelIncrementOneEtor();
+            var execIncTwo = new IntModelIncrementTwoEtor();
+            var pipe = PipeBuilder
+                .AsyncPipe<IntModel, int>()
+                .Cache(false)
+                .Executor((model, cache) => 
+                    {
+                        Assert.True(cache.GetSafely<int>("1") == 0);
+                        Assert.True(cache.GetSafely<int>("2") == 0);
+                        return PipeResult<int>
+                            .DefaultSuccessful
+                            .SetValue(model.Integer);
+                    }).Label("exec_1").Add()
+                .Executor(execIncOne).Label("exec_2").Add()
+                .Executor(execIncTwo).Label("exec_3").Add()
+                .Default((model, cache) => 
+                    {
+                        Assert.True(cache.GetSafely<int>("1") == 1);
+                        Assert.True(cache.GetSafely<int>("2") == 3);
+                        cache.ClearSafely();
+                        return PipeResult<int>
+                            .DefaultSuccessful
+                            .SetValue(model.Integer);
+                    }).Add()              
+                .Return((model, results) =>
+                {
+                    Assert.Contains(results, x => x.Label == "exec_1");
+                    Assert.Contains(results, x => x.Label == "exec_2");
+                    Assert.Contains(results, x => x.Label == "exec_3");
+                    Assert.Contains(results, x => x.Label == "Default");
+
+                    if (results.Length == 4)
+                        return PipeResult<int>
+                            .DefaultSuccessful
+                            .SetValue(model.Integer);
+
+                    return PipeResult<int>
+                            .DefaultUnSuccessful
+                            .SetValue(model.Integer);
+                });
+
+            for (int i = 0; i < 5; i++)
+            {
+                var result = await pipe.ExecuteAsync(new IntModel { Integer = 0 });
+                Assert.Equal(ExecutionResult.Successful, result.Success);
+                Assert.True(result.Value.Value == 3);
+            }
+        }
+
+        [Fact]
+        public async Task AsyncPipeMultipleExecutionsWithCacheAndIf()
+        {
+            var execIncOne = new IntModelIncrementOneEtor();
+            var execIncTwo = new IntModelIncrementTwoEtor();
+            var pipe = PipeBuilder
+                .AsyncPipe<IntModel, int>()
+                .Cache(false)
+                .Executor((model, cache) =>
+                {
+                    Assert.True(cache.GetSafely<int>("1") == 0);
+                    Assert.True(cache.GetSafely<int>("2") == 0);
+                    return PipeResult<int>
+                        .DefaultSuccessful
+                        .SetValue(model.Integer);
+                }).Label("exec_1").Add()
+                .Executor(execIncOne).Label("exec_2").Add()
+                .If(model => model.Integer > 100)
+                    .Executor((model,cache) =>
+                        {
+                            model.Integer += 1;
+                            cache.SetSafely<int>("3", model.Integer);
+                            return PipeResult<int>
+                                .DefaultSuccessful
+                                .SetValue(model.Integer);
+                        }).Label("exec_3").Add()
+                .EndIf()
+                .Executor(execIncTwo).Label("exec_4").Add()
+                .Default((model, cache) =>
+                {
+                    Assert.True(cache.GetSafely<int>("1") == 1);
+                    Assert.True(cache.GetSafely<int>("2") == 3);
+                    cache.ClearSafely();
+                    return PipeResult<int>
+                        .DefaultSuccessful
+                        .SetValue(model.Integer);
+                }).Add()
+                .Return((model, results) =>
+                {
+                    Assert.Contains(results, x => x.Label == "exec_1");
+                    Assert.Contains(results, x => x.Label == "exec_2");
+                    Assert.Contains(results, x => x.Label == "exec_4");
+                    Assert.Contains(results, x => x.Label == "Default");
+
+                    Assert.DoesNotContain(results, x => x.Label == "exec_3");
+
+                    if (results.Length == 4)
+                        return PipeResult<int>
+                            .DefaultSuccessful
+                            .SetValue(model.Integer);
+
+                    return PipeResult<int>
+                            .DefaultUnSuccessful
+                            .SetValue(model.Integer);
+                });
+
+            for (int i = 0; i < 5; i++)
+            {
+                var result = await pipe.ExecuteAsync(new IntModel { Integer = 0 });
+                Assert.Equal(ExecutionResult.Successful, result.Success);
+                Assert.True(result.Value.Value == 3);
+            }
+        }
+
 
 
     }

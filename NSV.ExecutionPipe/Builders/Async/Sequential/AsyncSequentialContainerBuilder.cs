@@ -378,7 +378,9 @@ namespace NSV.ExecutionPipe.Builders
         }
 
         private void Retry(
-            bool condition, int count, int timeOutMilliseconds)
+            bool condition, 
+            int count, 
+            int timeOutMilliseconds)
         {
             if (_skipCurrentExecutor || !condition)
                 return;
@@ -404,7 +406,10 @@ namespace NSV.ExecutionPipe.Builders
         }
 
         private void Restricted(
-            bool condition, int minCount, int maxCount, string key)
+            bool condition, 
+            int minCount, 
+            int maxCount, 
+            string key)
         {
             if (_skipCurrentExecutor || !condition)
                 return;
@@ -430,7 +435,8 @@ namespace NSV.ExecutionPipe.Builders
             _currentExecutorSettings.Label = label;
         }
 
-        private AsyncSequentialPipeBuilder<M, R> Add(bool defaultExecutor = false)
+        private AsyncSequentialPipeBuilder<M, R> Add(
+            bool defaultExecutor = false)
         {
             if (_skipCurrentExecutor)
                 return _asyncPipeBuilder;
