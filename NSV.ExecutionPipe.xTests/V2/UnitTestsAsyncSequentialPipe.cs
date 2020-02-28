@@ -11,7 +11,7 @@ using Xunit;
 
 namespace NSV.ExecutionPipe.xTests.V2
 {
-    public class UnitTestsV2
+    public class UnitTestsAsyncSequentialPipe
     {
         [Fact]
         public async Task CreateAsyncPipeTest()
