@@ -19,6 +19,7 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
         private ExecutorSettings<M, R> _currentExecutorSettings;
         private IAsyncContainer<M, R> _currentContainer;
         private bool _skipCurrentExecutor = false;
+        private bool _executeIf = false;
         private readonly AsyncConditionalQueueBuilder<M, R> _conditionalQueueBuilder;
         #endregion
 
@@ -123,6 +124,7 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
                 return this;
 
             _conditionalQueueBuilder.AddFuncIfCondition(condition);
+            _executeIf = true;
             return this;
         }
 
@@ -270,34 +272,42 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
         private void SetExecutor(
             Func<IAsyncExecutor<M, R>> executor)
         {
+            _skipCurrentExecutor = false;
             _currentContainer = new AsyncExecutorContainer<M, R>(executor);
             _currentExecutorSettings = new ExecutorSettings<M, R>();
         }
+
         private void SetExecutor(
             Func<M, Task<PipeResult<R>>> executor)
         {
+            _skipCurrentExecutor = false;
             _currentContainer = new AsyncFuncContainer<M, R>(executor);
             _currentExecutorSettings = new ExecutorSettings<M, R>();
         }
+
         private void SetExecutor(
             Func<M, IPipeCache, Task<PipeResult<R>>> executor)
         {
-            _currentContainer = new AsyncFuncCacheContainer<M, R>(executor);
-            _currentExecutorSettings = new ExecutorSettings<M, R>();
-        }
-        private void SetExecutor(
-            Func<M, PipeResult<R>> executor)
-        {
-            _currentContainer = new AsyncFuncContainer<M, R>(executor);
-            _currentExecutorSettings = new ExecutorSettings<M, R>();
-        }
-        private void SetExecutor(
-            Func<M, IPipeCache, PipeResult<R>> executor)
-        {
+            _skipCurrentExecutor = false;
             _currentContainer = new AsyncFuncCacheContainer<M, R>(executor);
             _currentExecutorSettings = new ExecutorSettings<M, R>();
         }
 
+        private void SetExecutor(
+            Func<M, PipeResult<R>> executor)
+        {
+            _skipCurrentExecutor = false;
+            _currentContainer = new AsyncFuncContainer<M, R>(executor);
+            _currentExecutorSettings = new ExecutorSettings<M, R>();
+        }
+
+        private void SetExecutor(
+            Func<M, IPipeCache, PipeResult<R>> executor)
+        {
+            _skipCurrentExecutor = false;
+            _currentContainer = new AsyncFuncCacheContainer<M, R>(executor);
+            _currentExecutorSettings = new ExecutorSettings<M, R>();
+        }
 
         private void Retry(
             int count, 
@@ -360,7 +370,6 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
             _currentContainer = new AsyncSemaphoreContainer<M, R>(_currentContainer, key);
         }
 
-
         private void Label(string label)
         {
             if (_skipCurrentExecutor)
@@ -385,6 +394,12 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
                 _conditionalQueueBuilder.Enque(
                     _currentExecutorSettings,
                     _currentContainer);
+
+            if (_executeIf)
+            {
+                _conditionalQueueBuilder.RemoveIfCondition();
+                _executeIf = false;
+            }
 
             _skipCurrentExecutor = false;
             _currentContainer = null;
