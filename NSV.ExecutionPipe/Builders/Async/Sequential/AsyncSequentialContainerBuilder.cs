@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 namespace NSV.ExecutionPipe.Builders
 {
     internal class AsyncSequentialContainerBuilder<M, R> :
+        AsyncContainerBuilder<M, R>,
         IAsyncSequentialExecutorBuilder<M, R>,
         IAsyncSequentialExecutorOkBuilder<M, R>,
         IAsyncSequentialExecutorFailBuilder<M, R>,
@@ -19,20 +20,15 @@ namespace NSV.ExecutionPipe.Builders
     {
         #region Private Fields
         private readonly AsyncSequentialPipeBuilder<M, R> _asyncPipeBuilder;
-        private ExecutorSettings<M, R> _currentExecutorSettings;
-        private IAsyncContainer<M, R> _currentContainer;
-        private bool _skipCurrentExecutor = false;
-        private bool _executeIf = false;
-        private readonly AsyncConditionalQueueBuilder<M, R> _conditionalQueueBuilder;
         #endregion
 
         #region C-tor
         internal AsyncSequentialContainerBuilder(
             AsyncSequentialPipeBuilder<M, R> asyncPipeBuilder,
             AsyncConditionalQueueBuilder<M, R> executeConditions)
+            :base(executeConditions)
         {
             _asyncPipeBuilder = asyncPipeBuilder;
-            _conditionalQueueBuilder = executeConditions;
         }
         #endregion
 
@@ -442,27 +438,7 @@ namespace NSV.ExecutionPipe.Builders
             if (_skipCurrentExecutor)
                 return _asyncPipeBuilder;
 
-            _currentExecutorSettings
-                .ExecuteConditions = _conditionalQueueBuilder.GetFuncIfConditions();
-
-            if (defaultExecutor)
-                _conditionalQueueBuilder.SetDefault(
-                    _currentExecutorSettings,
-                    _currentContainer);
-            else
-                _conditionalQueueBuilder.Enque(
-                    _currentExecutorSettings,
-                    _currentContainer);
-
-            if (_executeIf)
-            {
-                _conditionalQueueBuilder.RemoveIfCondition();
-                _executeIf = false;
-            }
-
-            _skipCurrentExecutor = false;
-            _currentContainer = null;
-            _currentExecutorSettings = null;
+            AddExecutor(defaultExecutor);
 
             return _asyncPipeBuilder;
         }
