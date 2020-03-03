@@ -20,7 +20,7 @@ namespace NSV.ExecutionPipe.Pipes
         public static SemaphoreSlim GetSemaphore(string key)
         {
             var result = _semaphores.Value
-            .TryGetValue(key, out var semaphoreSlim);
+                .TryGetValue(key, out var semaphoreSlim);
 
             return result
                ? semaphoreSlim

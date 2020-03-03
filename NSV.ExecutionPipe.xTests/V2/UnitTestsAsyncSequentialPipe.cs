@@ -907,8 +907,5 @@ namespace NSV.ExecutionPipe.xTests.V2
             var avg = array.Average();
             var max = array.Max();
         }
-
-
-
     }
 }
