@@ -8,7 +8,7 @@ namespace NSV.ExecutionPipe.Pipes
         private static Optional<ConcurrentDictionary<string, SemaphoreSlim>> _semaphores
             = new ConcurrentDictionary<string, SemaphoreSlim>();
 
-        public static void SetSemaphore(int initialCount, string key)
+        internal static void SetSemaphore(int initialCount, string key)
         {
 
             if (_semaphores.Value.ContainsKey(key))
@@ -17,7 +17,7 @@ namespace NSV.ExecutionPipe.Pipes
             _semaphores.Value.TryAdd(key, semaphoreSlim);
         }
 
-        public static SemaphoreSlim GetSemaphore(string key)
+        internal static SemaphoreSlim GetSemaphore(string key)
         {
             var result = _semaphores.Value
                 .TryGetValue(key, out var semaphoreSlim);
