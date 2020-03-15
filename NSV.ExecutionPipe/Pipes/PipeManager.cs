@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace NSV.ExecutionPipe.Pipes
 {
-    public static class PipeManager
+    internal class PipeManager
     {
         private static Optional<ConcurrentDictionary<string, SemaphoreSlim>> _semaphores
             = new ConcurrentDictionary<string, SemaphoreSlim>();

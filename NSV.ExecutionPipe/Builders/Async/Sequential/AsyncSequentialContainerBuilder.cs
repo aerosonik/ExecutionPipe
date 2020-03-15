@@ -38,6 +38,7 @@ namespace NSV.ExecutionPipe.Builders
             SetExecutorSkip();
             return this;
         }
+
         public IAsyncSequentialExecutorBuilder<M, R> Executor(
             Func<IAsyncExecutor<M, R>> executor)
         {
