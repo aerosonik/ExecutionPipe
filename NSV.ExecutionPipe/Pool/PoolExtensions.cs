@@ -15,7 +15,11 @@ namespace NSV.ExecutionPipe.Pool
             int maxCount,
             int increaseRatio = 2)
         {
-            var pool = new ExecutionPool<M, R>(fabric, initialCount, maxCount, increaseRatio);
+            var pool = new AsyncExecutionPool<M, R>(
+                fabric, 
+                initialCount, 
+                maxCount, 
+                increaseRatio);
             services.AddSingleton<IAsyncExecutionPool<M, R>>(pool);
             return services;
         }
