@@ -11,8 +11,7 @@ namespace NSV.ExecutionPipe.Pipes
     {
         Task<PipeResult<R>> ExecuteAsync(M model);
 
-        IAsyncExecutor<M, R> ToExecutor();
-
+        IAsyncExecutor<M, R> ToExecutor();       
     }
 
     public interface IAsyncPipe<M>

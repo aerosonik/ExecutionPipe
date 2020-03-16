@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 namespace NSV.ExecutionPipe.Builders
 {
     internal class AsyncSequentialContainerBuilder<M, R> :
+        AsyncContainerBuilder<M, R>,
         IAsyncSequentialExecutorBuilder<M, R>,
         IAsyncSequentialExecutorOkBuilder<M, R>,
         IAsyncSequentialExecutorFailBuilder<M, R>,
@@ -19,20 +20,15 @@ namespace NSV.ExecutionPipe.Builders
     {
         #region Private Fields
         private readonly AsyncSequentialPipeBuilder<M, R> _asyncPipeBuilder;
-        private ExecutorSettings<M, R> _currentExecutorSettings;
-        private IAsyncContainer<M, R> _currentContainer;
-        private bool _skipCurrentExecutor = false;
-        private bool _executeIf = false;
-        private readonly AsyncConditionalQueueBuilder<M, R> _conditionalQueueBuilder;
         #endregion
 
         #region C-tor
         internal AsyncSequentialContainerBuilder(
             AsyncSequentialPipeBuilder<M, R> asyncPipeBuilder,
             AsyncConditionalQueueBuilder<M, R> executeConditions)
+            :base(executeConditions)
         {
             _asyncPipeBuilder = asyncPipeBuilder;
-            _conditionalQueueBuilder = executeConditions;
         }
         #endregion
 
@@ -42,6 +38,7 @@ namespace NSV.ExecutionPipe.Builders
             SetExecutorSkip();
             return this;
         }
+
         public IAsyncSequentialExecutorBuilder<M, R> Executor(
             Func<IAsyncExecutor<M, R>> executor)
         {
@@ -314,155 +311,13 @@ namespace NSV.ExecutionPipe.Builders
 
         #region private
 
-        private void SetExecutorSkip()
-        {
-            _skipCurrentExecutor = true;
-        }
-        private void SetExecutor(
-            Func<IAsyncExecutor<M, R>> executor,
-            bool isDefault = false)
-        {
-            _skipCurrentExecutor = false;
-            _currentContainer = new AsyncExecutorContainer<M, R>(executor);
-            _currentExecutorSettings = isDefault
-                 ? new ExecutorSettings<M, R> { Label = "Default" }
-                 : new ExecutorSettings<M, R>();
-        }
-        private void SetExecutor(
-            Func<M, Task<PipeResult<R>>> executor,
-            bool isDefault = false)
-        {
-            _skipCurrentExecutor = false;
-            _currentContainer = new AsyncFuncContainer<M, R>(executor);
-            _currentExecutorSettings = isDefault
-                ? new ExecutorSettings<M, R> { Label = "Default" }
-                : new ExecutorSettings<M, R>();
-        }
-        private void SetExecutor(
-            Func<M, IPipeCache, Task<PipeResult<R>>> executor,
-            bool isDefault = false)
-        {
-            _skipCurrentExecutor = false;
-            _currentContainer = new AsyncFuncCacheContainer<M, R>(executor);
-            _currentExecutorSettings = isDefault
-                ? new ExecutorSettings<M, R> { Label = "Default" }
-                : new ExecutorSettings<M, R>();
-        }
-        private void SetExecutor(
-            Func<M, PipeResult<R>> executor,
-            bool isDefault = false)
-        {
-            _skipCurrentExecutor = false;
-            _currentContainer = new AsyncFuncContainer<M, R>(executor);
-            _currentExecutorSettings = isDefault
-                 ? new ExecutorSettings<M, R> { Label = "Default" }
-                 : new ExecutorSettings<M, R>();
-        }
-        private void SetExecutor(
-            Func<M, IPipeCache, PipeResult<R>> executor,
-            bool isDefault = false)
-        {
-            _skipCurrentExecutor = false;
-            _currentContainer = new AsyncFuncCacheContainer<M, R>(executor);
-            _currentExecutorSettings = isDefault
-                 ? new ExecutorSettings<M, R> { Label = "Default" }
-                 : new ExecutorSettings<M, R>();
-        }
-
-        private void Retry(
-            int count, int timeOutMilliseconds)
-        {
-            if (_skipCurrentExecutor)
-                return;
-
-            _currentContainer = new AsyncReTryContainer<M, R>(_currentContainer, count, timeOutMilliseconds);
-        }
-
-        private void Retry(
-            bool condition, 
-            int count, 
-            int timeOutMilliseconds)
-        {
-            if (_skipCurrentExecutor || !condition)
-                return;
-
-            _currentContainer = new AsyncReTryContainer<M, R>(_currentContainer, count, timeOutMilliseconds);
-        }
-
-        private void StopWatch()
-        {
-            if (_skipCurrentExecutor)
-                return;
-
-            _currentContainer = new AsyncStopWatchContainer<M, R>(_currentContainer);
-        }
-
-        private void StopWatch(
-            bool condition)
-        {
-            if (_skipCurrentExecutor || !condition)
-                return;
-
-            _currentContainer = new AsyncStopWatchContainer<M, R>(_currentContainer);
-        }
-
-        private void Restricted(
-            bool condition, 
-            int initialCount, 
-            string key)
-        {
-            if (_skipCurrentExecutor || !condition)
-                return;
-
-            PipeManager.SetSemaphore(initialCount, key);
-            _currentContainer = new AsyncSemaphoreContainer<M, R>(_currentContainer, key);
-        }
-        private void Restricted(
-            int initialCount, 
-            string key)
-        {
-            if (_skipCurrentExecutor)
-                return;
-
-            PipeManager.SetSemaphore(initialCount, key);
-            _currentContainer = new AsyncSemaphoreContainer<M, R>(_currentContainer, key);
-        }
-
-        private void Label(string label)
-        {
-            if (_skipCurrentExecutor)
-                return;
-
-            _currentExecutorSettings.Label = label;
-        }
-
         private AsyncSequentialPipeBuilder<M, R> Add(
             bool defaultExecutor = false)
         {
             if (_skipCurrentExecutor)
                 return _asyncPipeBuilder;
 
-            _currentExecutorSettings
-                .ExecuteConditions = _conditionalQueueBuilder.GetFuncIfConditions();
-
-            if (defaultExecutor)
-                _conditionalQueueBuilder.SetDefault(
-                    _currentExecutorSettings,
-                    _currentContainer);
-            else
-                _conditionalQueueBuilder.Enque(
-                    _currentExecutorSettings,
-                    _currentContainer);
-
-            if (_executeIf)
-            {
-                _conditionalQueueBuilder.RemoveIfCondition();
-                _executeIf = false;
-            }
-
-            _skipCurrentExecutor = false;
-            _currentContainer = null;
-            _currentExecutorSettings = null;
+            AddExecutor(defaultExecutor);
 
             return _asyncPipeBuilder;
         }

@@ -26,6 +26,8 @@ namespace NSV.ExecutionPipe.Pipes.Async.Parallel
                 Array.Resize(ref parallelResults, parallelResults.Length + 1);
                 parallelResults[parallelResults.Length - 1] = await DefaultExecutor
                     .Value.Container.RunAsync(model, Cache);
+                parallelResults[parallelResults.Length - 1].
+                    SetLabel(DefaultExecutor.Value.Settings.Label);
             }
 
             return _returnHandler(model, parallelResults);

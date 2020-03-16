@@ -16,9 +16,9 @@ namespace NSV.ExecutionPipe.xTests.V2
         {
             model.Integer += 1;
             pipeCache.SetSafely<int>("1", model.Integer);
-            return PipeResult<int>
+            return await Task.FromResult(PipeResult<int>
                 .DefaultSuccessful
-                .SetValue(model.Integer);
+                .SetValue(model.Integer));
         }
     }
 
@@ -30,9 +30,9 @@ namespace NSV.ExecutionPipe.xTests.V2
         {
             model.Integer += 2;
             pipeCache.SetSafely<int>("2", model.Integer);
-            return PipeResult<int>
+            return await Task.FromResult(PipeResult<int>
                 .DefaultSuccessful
-                .SetValue(model.Integer);
+                .SetValue(model.Integer));
         }
     }
     public class IntModelIncrementThreeEtor : IAsyncExecutor<IntModel, int>
@@ -103,9 +103,9 @@ namespace NSV.ExecutionPipe.xTests.V2
             IPipeCache pipeCache = null)
         {
             model.Integer += 100;
-            return PipeResult<int>
+            return await Task.FromResult(PipeResult<int>
                 .DefaultSuccessful
-                .SetValue(model.Integer);
+                .SetValue(model.Integer));
         }
     }
 
@@ -120,9 +120,9 @@ namespace NSV.ExecutionPipe.xTests.V2
             var x3 = pipeCache.GetSafely<int>("3");
             var x4 = pipeCache.GetSafely<int>("4");
             model.Integer += x1 + x2 + x3 + x4;
-            return PipeResult<int>
+            return await Task.FromResult(PipeResult<int>
                 .DefaultSuccessful
-                .SetValue(model.Integer);
+                .SetValue(model.Integer));
         }
     }
 
