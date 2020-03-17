@@ -13,7 +13,7 @@ namespace NSV.ExecutionPipe.Pool
     internal class AsyncExecutionPool<M, R> : IAsyncExecutionPool<M, R>
     {
         private readonly int _initialCount = 0;
-        private readonly int _macCount = 0;
+        private readonly int _maxCount = 0;
         private readonly int _increaseRatio = 2;
         private int _currentCount = 0;
         private readonly ConcurrentStack<IAsyncPipe<M, R>> _stack;
@@ -32,7 +32,7 @@ namespace NSV.ExecutionPipe.Pool
             _stack = new ConcurrentStack<IAsyncPipe<M, R>>();
             _factory = factory;
             _initialCount = initialCount;
-            _macCount = maxCount;
+            _maxCount = maxCount;
             _increaseRatio = increaseRatio;
             InitPool();
         }
@@ -61,7 +61,7 @@ namespace NSV.ExecutionPipe.Pool
                 var count = _currentCount * _increaseRatio - _currentCount;
                 for (int i = 0; i < count; i++)
                 {
-                    if (_currentCount + i > _macCount)
+                    if (_currentCount + i >= _maxCount)
                         break;
                     _stack.Push(_factory());
                     _currentCount++;
@@ -80,8 +80,9 @@ namespace NSV.ExecutionPipe.Pool
 
                 for (int i = 0; i < count; i++)
                 {
-                    if (_stack.TryPop(out var _))
-                       _currentCount--;
+                    if (!_stack.TryPop(out var _))
+                        return;
+                    _currentCount--;
                 }
             }
         }
@@ -92,7 +93,8 @@ namespace NSV.ExecutionPipe.Pool
             {
                 if (_stack.TryPop(out var pipe))
                     return pipe;
-                IncreasePool();
+                if(_currentCount < _maxCount)
+                    IncreasePool();
             }
         }
 

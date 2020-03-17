@@ -10,5 +10,7 @@ namespace NSV.ExecutionPipe.Pool
     public interface IAsyncExecutionPool<M,R>
     {
         public Task<PipeResult<R>> ExecuteAsync(M model);
+
+        int PoolSize { get; }
     }
 }
