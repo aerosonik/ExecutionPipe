@@ -11,7 +11,7 @@ using Xunit;
 
 namespace NSV.ExecutionPipe.xTests.V2
 {
-    public class UnitTestsV2
+    public class UnitTestsAsyncSequentialPipe
     {
         [Fact]
         public async Task CreateAsyncPipeTest()
@@ -285,9 +285,9 @@ namespace NSV.ExecutionPipe.xTests.V2
                 .Executor(async (model, cache) =>
                     {
                         model.Integer += 1;
-                        return PipeResult<int>
+                        return await Task.FromResult(PipeResult<int>
                                 .DefaultUnSuccessfulBreak
-                                .SetValue(model.Integer);
+                                .SetValue(model.Integer));
                     })
                     .Label("exec_2")
                     .IfFail().Break(true).Return((m, r) => r).Set()
@@ -295,9 +295,9 @@ namespace NSV.ExecutionPipe.xTests.V2
                 .Executor(async (model, cache) =>
                     {
                         model.Integer += 1;
-                        return PipeResult<int>
+                        return await Task.FromResult(PipeResult<int>
                                 .DefaultSuccessful
-                                .SetValue(model.Integer);
+                                .SetValue(model.Integer));
                     })
                     .Label("exec_3")
                     .Add()
@@ -338,9 +338,9 @@ namespace NSV.ExecutionPipe.xTests.V2
                 .Executor(async (model, cache) =>
                     {
                         model.Integer += 1;
-                        return PipeResult<int>
+                        return await Task.FromResult(PipeResult<int>
                                 .DefaultUnSuccessfulBreak
-                                .SetValue(model.Integer);
+                                .SetValue(model.Integer));
                     })
                     .Label("exec_2")
                     .IfFail().Break(true).Set()
@@ -348,9 +348,9 @@ namespace NSV.ExecutionPipe.xTests.V2
                 .Executor(async (model, cache) =>
                     {
                         model.Integer += 1;
-                        return PipeResult<int>
+                        return await Task.FromResult(PipeResult<int>
                                 .DefaultSuccessful
-                                .SetValue(model.Integer);
+                                .SetValue(model.Integer));
                     })
                     .Label("exec_3")
                     .Add()
@@ -391,9 +391,9 @@ namespace NSV.ExecutionPipe.xTests.V2
                 .Executor(async (model, cache) =>
                     {
                         model.Integer += 1;
-                        return PipeResult<int>
+                        return await Task.FromResult(PipeResult<int>
                                 .DefaultUnSuccessfulBreak
-                                .SetValue(model.Integer);
+                                .SetValue(model.Integer));
                     })
                     .Label("exec_2")
                     .IfFail().Break(true).Set()
@@ -401,9 +401,9 @@ namespace NSV.ExecutionPipe.xTests.V2
                 .Executor(async (model, cache) =>
                     {
                         model.Integer += 1;
-                        return PipeResult<int>
+                        return await Task.FromResult(PipeResult<int>
                                 .DefaultSuccessful
-                                .SetValue(model.Integer);
+                                .SetValue(model.Integer));
                     })
                     .Label("exec_3")
                     .Add()
@@ -436,9 +436,9 @@ namespace NSV.ExecutionPipe.xTests.V2
                 .Executor(async (model, cache) =>
                     {
                         model.Integer += 1;
-                        return PipeResult<int>
+                        return await Task.FromResult(PipeResult<int>
                                 .DefaultUnSuccessfulBreak
-                                .SetValue(model.Integer);
+                                .SetValue(model.Integer));
                     })
                     .Label("exec_2")
                     .IfFail().Break(true).Return((m, r) => r.SetValue(222)).Set()
@@ -446,9 +446,9 @@ namespace NSV.ExecutionPipe.xTests.V2
                 .Executor(async (model, cache) =>
                     {
                         model.Integer += 1;
-                        return PipeResult<int>
+                        return await Task.FromResult(PipeResult<int>
                                 .DefaultSuccessful
-                                .SetValue(model.Integer);
+                                .SetValue(model.Integer));
                     })
                     .Label("exec_3")
                     .Add()
@@ -483,9 +483,9 @@ namespace NSV.ExecutionPipe.xTests.V2
                 .Executor(async (model, cache) =>
                     {
                         model.Integer += 1;
-                        return PipeResult<int>
+                        return await Task.FromResult(PipeResult<int>
                                 .DefaultUnSuccessfulBreak
-                                .SetValue(model.Integer);
+                                .SetValue(model.Integer));
                     })
                     .Label("exec_2")
                     .ExecuteIf(m => m.Integer > 100)
@@ -493,9 +493,9 @@ namespace NSV.ExecutionPipe.xTests.V2
                 .Executor(async (model, cache) =>
                 {
                     model.Integer += 1;
-                    return PipeResult<int>
+                    return await Task.FromResult(PipeResult<int>
                             .DefaultSuccessful
-                            .SetValue(model.Integer);
+                            .SetValue(model.Integer));
                 })
                     .Label("exec_3")
                     .Add()
@@ -530,9 +530,9 @@ namespace NSV.ExecutionPipe.xTests.V2
                 .Executor(async (model, cache) =>
                     {
                         model.Integer += 1;
-                        return PipeResult<int>
+                        return await Task.FromResult(PipeResult<int>
                                 .DefaultSuccessfulBreak
-                                .SetValue(model.Integer);
+                                .SetValue(model.Integer));
                     })
                     .Label("exec_2")
                     .IfOk().Break(true).Set()
@@ -540,9 +540,9 @@ namespace NSV.ExecutionPipe.xTests.V2
                 .Executor(async (model, cache) =>
                     {
                         model.Integer += 1;
-                        return PipeResult<int>
+                        return await Task.FromResult(PipeResult<int>
                                 .DefaultSuccessful
-                                .SetValue(model.Integer);
+                                .SetValue(model.Integer));
                     })
                     .Label("exec_3")
                     .Add()
@@ -577,9 +577,9 @@ namespace NSV.ExecutionPipe.xTests.V2
                 .Executor(async (model, cache) =>
                 {
                     model.Integer += 1;
-                    return PipeResult<int>
+                    return await Task.FromResult(PipeResult<int>
                             .DefaultSuccessfulBreak
-                            .SetValue(model.Integer);
+                            .SetValue(model.Integer));
                 })
                     .Label("exec_2")
                     .IfOk().Break(true).Return((m, r) => r.SetValue(444)).Set()
@@ -587,9 +587,9 @@ namespace NSV.ExecutionPipe.xTests.V2
                 .Executor(async (model, cache) =>
                 {
                     model.Integer += 1;
-                    return PipeResult<int>
+                    return await Task.FromResult(PipeResult<int>
                             .DefaultSuccessful
-                            .SetValue(model.Integer);
+                            .SetValue(model.Integer));
                 })
                     .Label("exec_3")
                     .Add()
@@ -907,6 +907,5 @@ namespace NSV.ExecutionPipe.xTests.V2
             var avg = array.Average();
             var max = array.Max();
         }
-
     }
 }

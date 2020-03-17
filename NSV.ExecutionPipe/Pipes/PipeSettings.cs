@@ -24,7 +24,9 @@ namespace NSV.ExecutionPipe.Pipes
                 _cacheObject = value;
             }
         }
+
         protected Func<IPipeCache> _cacheFunc = () => null;
+
         protected IPipeCache _cacheObject;
 
         protected List<PipeResult<R>> _results;
@@ -37,8 +39,10 @@ namespace NSV.ExecutionPipe.Pipes
             ExecutorSettings<M, R> Settings,
             IAsyncContainer<M, R> Container
             )[] _queue;
+
         protected Optional<(ExecutorSettings<M, R> Settings,
                 IAsyncContainer<M, R> Container)> DefaultExecutor;
+
         #region IPipeSettings<M, R>
 
         void IPipeSettings<M, R>.SetCache(Func<IPipeCache> cache)

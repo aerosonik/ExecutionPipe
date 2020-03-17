@@ -32,10 +32,10 @@ namespace NSV.ExecutionPipe.Builders
 
         #region Parallel
 
-        //public static IAsyncParallelPipeBuilder<M, R> AsyncParallelPipe<M, R>()
-        //{
-        //    return new AsyncParallelPipeBuilder<M, R>();
-        //}
+        public static IAsyncParallelPipeBuilder<M, R> AsyncParallelPipe<M, R>()
+        {
+            return new AsyncParallelPipeBuilder<M, R>();
+        }
         //public static IAsyncParallelPipeBuilder<M> AsyncParallelPipe<M>()
         //{
         //    //return new AsyncSequentialPipeBuilder<M>();

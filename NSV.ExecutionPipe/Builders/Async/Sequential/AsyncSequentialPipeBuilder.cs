@@ -22,6 +22,12 @@ namespace NSV.ExecutionPipe.Builders.Async.Sequential
 
         #region Executor
 
+        //IAsyncSequentialExecutorBuilder<M, R> IAsyncSequentialPipeBuilder<M, R>.Executor<TAsyncExecutor>()
+        //{
+        //    IAsyncExecutor<M, R> executor = null;
+        //    return _containerBuilder.Executor(() => executor);
+        //}
+
         IAsyncSequentialExecutorBuilder<M, R> IAsyncSequentialPipeBuilder<M, R>.Executor(
             IAsyncExecutor<M, R> executor)
         {
