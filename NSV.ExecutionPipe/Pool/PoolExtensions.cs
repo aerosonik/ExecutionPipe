@@ -1,26 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Extensions.DependencyInjection;
+using NSV.ExecutionPipe.Builders;
 using NSV.ExecutionPipe.Pipes;
 
 namespace NSV.ExecutionPipe.Pool
 {
     public static class PoolExtensions
     {
-        public static IServiceCollection AddExecutionPool<M,R>(
+        public static IServiceCollection AddAsyncExecutionPool<M, R>(
             this IServiceCollection services,
-            Func<IAsyncPipe<M, R>> fabric,
+            Func<IPipeBuilder<M, R>, IAsyncPipe<M, R>> factory,
             int initialCount,
             int maxCount,
             int increaseRatio = 2)
         {
-            var pool = new AsyncExecutionPool<M, R>(
-                fabric, 
-                initialCount, 
-                maxCount, 
-                increaseRatio);
-            services.AddSingleton<IAsyncExecutionPool<M, R>>(pool);
+            services.AddSingleton<IPipeBuilder<M, R>>(provider =>
+                 new InternalPipeBuilder<M, R>(provider));
+
+            services.AddSingleton<IAsyncExecutionPool<M, R>>(provider => 
+                new AsyncExecutionPool<M,R>(
+                    provider.GetRequiredService<IPipeBuilder<M, R>>(),
+                    factory,
+                    initialCount,
+                    maxCount,
+                    increaseRatio));
+
             return services;
         }
     }

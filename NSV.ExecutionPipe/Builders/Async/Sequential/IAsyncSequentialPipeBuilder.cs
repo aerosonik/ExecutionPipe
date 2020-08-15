@@ -12,8 +12,8 @@ namespace NSV.ExecutionPipe.Builders.Async.Sequential
         IAsyncSequentialPipeBuilder<M, R> Cache(bool threadSafe);
         IAsyncSequentialPipeBuilder<M, R> StopWatch(bool use);
 
-        //IAsyncSequentialExecutorBuilder<M, R> Executor<TAsyncExecutor>() 
-        //    where TAsyncExecutor: IAsyncExecutor<M, R>;
+        IAsyncSequentialExecutorBuilder<M, R> Executor<TAsyncExecutor>() 
+            where TAsyncExecutor: IAsyncExecutor<M, R>;
         IAsyncSequentialExecutorBuilder<M, R> Executor(IAsyncExecutor<M, R> executor);
         IAsyncSequentialExecutorBuilder<M, R> Executor(IAsyncExecutor<M, R> executor, bool addif);
         IAsyncSequentialExecutorBuilder<M, R> Executor(Func<IAsyncExecutor<M, R>> executor);
