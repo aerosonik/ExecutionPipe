@@ -12,6 +12,8 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
         IAsyncParallelPipeBuilder<M, R> Cache(bool threadSafe);
         IAsyncParallelPipeBuilder<M, R> StopWatch(bool use);
 
+        IAsyncParallelExecutorBuilder<M, R> Executor<TAsyncExecutor>()
+            where TAsyncExecutor : IAsyncExecutor<M, R>;
         IAsyncParallelExecutorBuilder<M, R> Executor(IAsyncExecutor<M, R> executor);
         IAsyncParallelExecutorBuilder<M, R> Executor(IAsyncExecutor<M, R> executor, bool addif);
         IAsyncParallelExecutorBuilder<M, R> Executor(Func<IAsyncExecutor<M, R>> executor);

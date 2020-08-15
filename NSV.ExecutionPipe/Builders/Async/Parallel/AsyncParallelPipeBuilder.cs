@@ -5,6 +5,7 @@ using NSV.ExecutionPipe.Executors;
 using NSV.ExecutionPipe.Models;
 using NSV.ExecutionPipe.Pipes;
 using NSV.ExecutionPipe.Pipes.Async.Parallel;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace NSV.ExecutionPipe.Builders.Async.Parallel
 {
@@ -13,14 +14,29 @@ namespace NSV.ExecutionPipe.Builders.Async.Parallel
         IAsyncParallelPipeBuilder<M, R>
     {
         private readonly AsyncParallelContainerBuilder<M, R> _containerBuilder;
-
-        public AsyncParallelPipeBuilder()
+        private readonly IServiceProvider _provider;
+        internal AsyncParallelPipeBuilder()
         {
             _pipe = new AsyncParallelPipe<M, R>();
             _containerBuilder = new AsyncParallelContainerBuilder<M, R>(this, _queueBuilder);
         }
-
+        internal AsyncParallelPipeBuilder(IServiceProvider provider) : this()
+        {
+            _provider = provider;
+        }
         #region Executor
+        IAsyncParallelExecutorBuilder<M, R> IAsyncParallelPipeBuilder<M, R>.Executor<TAsyncExecutor>()
+        {
+            if (_provider == null)
+                throw new ArgumentNullException("Service provider is NULL, required executor can't be resolved ");
+
+            var executor = _provider.GetRequiredService<TAsyncExecutor>();
+            if (executor == null)
+                throw new ArgumentNullException("Required executor wasn't registered ");
+
+            return _containerBuilder.Executor(() => executor);
+        }
+
         IAsyncParallelExecutorBuilder<M, R> IAsyncParallelPipeBuilder<M, R>.Executor(
             IAsyncExecutor<M, R> executor)
         {

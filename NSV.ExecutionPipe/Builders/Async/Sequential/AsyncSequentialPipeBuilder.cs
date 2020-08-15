@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using NSV.ExecutionPipe.Cache;
 using NSV.ExecutionPipe.Executors;
 using NSV.ExecutionPipe.Models;
@@ -13,20 +14,30 @@ namespace NSV.ExecutionPipe.Builders.Async.Sequential
         IAsyncSequentialPipeBuilder<M, R>
     {
         private readonly AsyncSequentialContainerBuilder<M, R> _containerBuilder;
-
-        public AsyncSequentialPipeBuilder()
+        private readonly IServiceProvider _provider;
+        internal AsyncSequentialPipeBuilder()
         {
             _pipe = new AsyncSequentialPipe<M, R>();
             _containerBuilder = new AsyncSequentialContainerBuilder<M, R>(this, _queueBuilder);
         }
+        internal AsyncSequentialPipeBuilder(IServiceProvider provider): this()
+        {
+            _provider = provider;
+        }
 
         #region Executor
 
-        //IAsyncSequentialExecutorBuilder<M, R> IAsyncSequentialPipeBuilder<M, R>.Executor<TAsyncExecutor>()
-        //{
-        //    IAsyncExecutor<M, R> executor = null;
-        //    return _containerBuilder.Executor(() => executor);
-        //}
+        IAsyncSequentialExecutorBuilder<M, R> IAsyncSequentialPipeBuilder<M, R>.Executor<TAsyncExecutor>()
+        {
+            if (_provider == null)
+                throw new ArgumentNullException("Service provider is NULL, required executor can't be resolved ");
+
+            var executor = _provider.GetRequiredService<TAsyncExecutor>();
+            if(executor == null)
+                throw new ArgumentNullException("Required executor wasn't registered ");
+
+            return _containerBuilder.Executor(() => executor);
+        }
 
         IAsyncSequentialExecutorBuilder<M, R> IAsyncSequentialPipeBuilder<M, R>.Executor(
             IAsyncExecutor<M, R> executor)

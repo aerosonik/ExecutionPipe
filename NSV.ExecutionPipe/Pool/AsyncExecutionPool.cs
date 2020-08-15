@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
+using NSV.ExecutionPipe.Builders;
 using NSV.ExecutionPipe.Models;
 using NSV.ExecutionPipe.Pipes;
 
@@ -17,19 +14,22 @@ namespace NSV.ExecutionPipe.Pool
         private readonly int _increaseRatio = 2;
         private int _currentCount = 0;
         private readonly ConcurrentStack<IAsyncPipe<M, R>> _stack;
-        private readonly Func<IAsyncPipe<M, R>> _factory;
+        private readonly Func<IPipeBuilder<M, R>, IAsyncPipe<M, R>> _factory;
+        private readonly IPipeBuilder<M, R> _builder;
         private readonly object _increaseLock = new object();
         private readonly object _decreaseLock = new object();
 
         public int PoolSize => _currentCount;
 
         internal AsyncExecutionPool(
-            Func<IAsyncPipe<M, R>> factory,
+            IPipeBuilder<M, R> builder,
+            Func<IPipeBuilder<M, R>,IAsyncPipe<M, R>> factory,
             int initialCount,
             int maxCount,
             int increaseRatio = 2)
         {
             _stack = new ConcurrentStack<IAsyncPipe<M, R>>();
+            _builder = builder;
             _factory = factory;
             _initialCount = initialCount;
             _maxCount = maxCount;
@@ -49,7 +49,7 @@ namespace NSV.ExecutionPipe.Pool
         {
             for (int i = 0; i < _initialCount; i++)
             {
-                _stack.Push(_factory());
+                _stack.Push(_factory(_builder));
                 _currentCount++;
             }
         }
@@ -63,7 +63,7 @@ namespace NSV.ExecutionPipe.Pool
                 {
                     if (_currentCount + i >= _maxCount)
                         break;
-                    _stack.Push(_factory());
+                    _stack.Push(_factory(_builder));
                     _currentCount++;
                 }
             }

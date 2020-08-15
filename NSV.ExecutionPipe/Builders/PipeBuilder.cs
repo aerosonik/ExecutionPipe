@@ -9,7 +9,7 @@ using System.Text;
 
 namespace NSV.ExecutionPipe.Builders
 {
-    public class PipeBuilder
+    public static class PipeBuilder
     {
         #region Async
 
@@ -17,7 +17,13 @@ namespace NSV.ExecutionPipe.Builders
         public static IAsyncSequentialPipeBuilder<M, R> AsyncPipe<M,R>()
         {
             return new AsyncSequentialPipeBuilder<M, R>();
+            //return new AsyncSequentialPipeBuilder<M, R>();
         }
+        //public static IAsyncSequentialPipeBuilder<M, R> AsyncPipe<M, R>(IServiceProvider provider)
+        //{
+        //    return new AsyncSequentialPipeBuilder<M, R>(Provider);
+        //}
+
         //public static IAsyncSequentialPipeBuilder<M> AsyncPipe<M>()
         //{
         //    //return new AsyncSequentialPipeBuilder<M>();
@@ -35,7 +41,12 @@ namespace NSV.ExecutionPipe.Builders
         public static IAsyncParallelPipeBuilder<M, R> AsyncParallelPipe<M, R>()
         {
             return new AsyncParallelPipeBuilder<M, R>();
+           // return new AsyncParallelPipeBuilder<M, R>();
         }
+        //public static IAsyncParallelPipeBuilder<M, R> AsyncParallelPipe<M, R>(IServiceProvider provider)
+        //{
+        //    return new AsyncParallelPipeBuilder<M, R>(Provider);
+        //}
         //public static IAsyncParallelPipeBuilder<M> AsyncParallelPipe<M>()
         //{
         //    //return new AsyncSequentialPipeBuilder<M>();
