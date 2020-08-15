@@ -1,4 +1,5 @@
-﻿using NSV.ExecutionPipe.Builders;
+﻿using Microsoft.Extensions.DependencyInjection;
+using NSV.ExecutionPipe.Builders;
 using NSV.ExecutionPipe.Models;
 using NSV.ExecutionPipe.Pipes;
 using NSV.ExecutionPipe.Pool;
@@ -13,9 +14,9 @@ namespace NSV.ExecutionPipe.xTests.V2
 {
     public class UnitTestsExecutionPool
     {
-        private IAsyncPipe<int, int> CreatePipe()
+        private IAsyncPipe<int, int> CreateAsyncPipe(IPipeBuilder<int, int> builder)
         {
-            return PipeBuilder.AsyncPipe<int, int>()
+            return builder.AsyncPipe()
                 .Executor(async (model, cache) =>
                 {
                     await Task.Delay(1000);
@@ -30,13 +31,17 @@ namespace NSV.ExecutionPipe.xTests.V2
         [Fact]
         public async Task ExecutionPoolInit10()
         {
-            var pool = ExecutionPoolFactory
-                .CreateExecutionPool<int,int>(CreatePipe, 10, 100, 2);
+            var serviceProvider = new ServiceCollection()
+                .AddAsyncExecutionPool<int, int>(CreateAsyncPipe, 10, 100, 2)
+                .BuildServiceProvider();
+            var pool = serviceProvider
+                .GetRequiredService<IAsyncExecutionPool<int, int>>();
+
             var results = new List<Task<PipeResult<int>>>();
             var counters = new List<int>();
-            for(int i = 0; i< 100; i++)
+            for (int i = 0; i < 100; i++)
             {
-                for(int j=0; j < 10; j++)
+                for (int j = 0; j < 10; j++)
                 {
                     results.Add(pool.ExecuteAsync(j + i));
                     counters.Add(pool.PoolSize);
@@ -53,8 +58,12 @@ namespace NSV.ExecutionPipe.xTests.V2
         [Fact]
         public async Task ExecutionPoolInit100()
         {
-            var pool = ExecutionPoolFactory
-                .CreateExecutionPool<int, int>(CreatePipe, 100, 100, 2);
+            var serviceProvider = new ServiceCollection()
+                .AddAsyncExecutionPool<int, int>(CreateAsyncPipe, 100, 100, 2)
+                .BuildServiceProvider();
+            var pool = serviceProvider
+                .GetRequiredService<IAsyncExecutionPool<int, int>>();
+
             var results = new List<Task<PipeResult<int>>>();
             var counters = new List<int>();
             for (int i = 0; i < 100; i++)
