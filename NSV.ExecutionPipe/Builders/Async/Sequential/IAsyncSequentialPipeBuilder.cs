@@ -29,8 +29,8 @@ namespace NSV.ExecutionPipe.Builders.Async.Sequential
         IAsyncSequentialExecutorBuilder<M, R> Executor(Func<M, IPipeCache, PipeResult<R>> executor);
         IAsyncSequentialExecutorBuilder<M, R> Executor(Func<M, IPipeCache, PipeResult<R>> executor, bool addif);
 
-        //IAsyncSequentialForeachBuilder<M, TEnumerator, R> Foreach<TAsyncExecutor, TEnumerator>(Expression<Func<M, IEnumerable<TEnumerator>>> iterator)
-        //   where TAsyncExecutor : IAsyncExecutor<M, R>;
+        IAsyncSequentialForeachBuilder<M, TEnumerator, R, IAsyncSequentialPipeBuilder<M, R>> Foreach<TEnumerator>(Expression<Func<M, IEnumerable<TEnumerator>>> enumerated);
+
         //IAsyncSequentialForeachBuilder<M, TEnumerator, R> Foreach<TEnumerator>(IAsyncExecutor<M, R> executor, Expression<Func<M, IEnumerable<TEnumerator>>> iterator);
         //IAsyncSequentialForeachBuilder<M, TEnumerator, R> Foreach<TEnumerator>(IAsyncExecutor<M, R> executor, Expression<Func<M, IEnumerable<TEnumerator>>> iterator, bool addif);
 

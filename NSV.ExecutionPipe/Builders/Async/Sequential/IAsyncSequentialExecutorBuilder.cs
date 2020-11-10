@@ -45,4 +45,21 @@ namespace NSV.ExecutionPipe.Builders.Async.Sequential
         IAsyncSequentialPipeBuilder Add();
     }
 
+    public interface IAsyncSequentialExecutorBuilder<M, R, TReturnInterface>
+    {
+        //IAsyncSequentialExecutorFailBuilder<M, R> IfFail();
+        //IAsyncSequentialExecutorOkBuilder<M, R> IfOk();
+        IAsyncSequentialExecutorBuilder<M, R, TReturnInterface> StopWatch();
+        IAsyncSequentialExecutorBuilder<M, R, TReturnInterface> StopWatch(bool condition);
+        IAsyncSequentialExecutorBuilder<M, R, TReturnInterface> Restricted(
+            int initialCount,
+            string key);
+        IAsyncSequentialExecutorBuilder<M, R, TReturnInterface> Restricted(
+            bool condition,
+            int initialCount,
+            string key);
+        IAsyncSequentialExecutorBuilder<M, R, TReturnInterface> Label(string label);
+        IAsyncSequentialExecutorBuilder<M, R, TReturnInterface> ExecuteIf(Func<M, bool> condition);
+        TReturnInterface Add();
+    }
 }

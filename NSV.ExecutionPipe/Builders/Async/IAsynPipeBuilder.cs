@@ -6,7 +6,7 @@ namespace NSV.ExecutionPipe.Builders.Async
 {
     public interface IAsynPipeBuilder<M, R>
     {
-        IAsyncPipe<M, R> Return(Func<M, PipeResult<R>[], PipeResult<R>> rersultHandler);
+        IAsyncPipe<M, R> Aggregate(Func<M, PipeResult<R>[], PipeResult<R>> rersultsAggregator);
     }
 
     public interface IAsynPipeBuilder<M>

@@ -9,7 +9,7 @@ using NSV.ExecutionPipe.Pipes.Async.Sequential;
 
 namespace NSV.ExecutionPipe.Builders.Async.Sequential
 {
-    internal class AsyncSequentialPipeBuilder<M, R> :    
+    internal class AsyncSequentialPipeBuilder<M, R> :  
         AsynPipeBuilder<M, R>,
         IAsyncSequentialPipeBuilder<M, R>
     {
